@@ -117,6 +117,8 @@ mv SRR8428904_1.fastq mutant_Rep3_R1.fastq
 mv SRR8428904_2.fastq mutant_Rep3_R2.fastq
 </pre>
 
+The full slurm script is called [data_dump.sh](/raw_data/data_dump.sh) can be found in **raw_data/** folder.  
+
 As a precautionary measure, always include your temporary directory in the environment. While not all programs require a temporary directory to work, it takes far less time including ours in the environment than it is waiting for an error! After typing our script, we press CTRL + X to exit, 'y', and then enter to save.
 
 Now that we have our script saved, we submit it to the compute nodes with the following command:
@@ -205,8 +207,6 @@ Let's put all of this together for our sickle script using our downloaded fastq 
 
 <pre style="color: silver; background: black;">-bash-4.2$ nano sickle_run.sh
 
-                                                                                             
-
 #!/bin/bash
 #SBATCH --job-name=sickle_run
 #SBATCH --mail-user=
@@ -224,31 +224,28 @@ export TMPDIR=/home/CAM/$USER/tmp/
 
 module load sickle
 
-mkdir -p ../trimmed_reads
+sickle pe -t sanger -f ../raw_data/wt_Rep1_R1.fastq -r ../raw_data/wt_Rep1_R2.fastq -o trimmed_wt_Rep1_R1.fastq -p trimmed_wt_Rep1_R2.fastq -l 45 -q 25 -s singles_wt_Rep1_R1.fastq
 
-sickle pe -t sanger -f /raw_data/wt_Rep1_R1.fastq -r /raw_data/wt_Rep1_R2.fastq -o /trimmed_reads/trimmed_wt_Rep1_R1.fastq p /trimmed_reads/trimmed_wt_Rep1_R2.fastq -l 45 -q 25 -s /trimmed_reads/singles_wt_Rep1_R1.fastq
+sickle pe -t sanger -f ../raw_data/wt_Rep2_R1.fastq -r ../raw_data/wt_Rep2_R2.fastq -o trimmed_wt_Rep2_R1.fastq -p trimmed_wt_Rep2_R2.fastq -l 45 -q 25 -s singles_wt_Rep2_R1.fastq
 
-sickle pe -t sanger -f /raw_data/wt_Rep2_R1.fastq -r /raw_data/wt_Rep2_R2.fastq -o /trimmed_reads/trimmed_wt_Rep2_R1.fastq p /trimmed_reads/trimmed_wt_Rep2_R2.fastq -l 45 -q 25 -s /trimmed_reads/singles_wt_Rep2_R1.fastq
+sickle pe -t sanger -f ../raw_data/wt_Rep3_R1.fastq -r ../raw_data/wt_Rep3_R2.fastq -o trimmed_wt_Rep3_R1.fastq -p trimmed_wt_Rep3_R2.fastq -l 4 5-q 25 -s singles_wt_Rep3_R1.fastq
 
-sickle pe -t sanger -f /raw_data/wt_Rep3_R1.fastq -r /raw_data/wt_Rep3_R2.fastq -o /trimmed_reads/trimmed_wt_Rep3_R1.fastq p /trimmed_reads/trimmed_wt_Rep3_R2.fastq -l 45 -q 25 -s /trimmed_reads/singles_wt_Rep3_R1.fastq
+sickle pe -t sanger -f ../raw_data/mutant_Rep1_R1.fastq -r ../raw_data/mutant_Rep1_R2.fastq -o trimmed_mutant_Rep1_R1.fastq -p trimmed_mutant_Rep1_R2.fastq -l 45 -q 25 -s singles_mutant_Rep1_R1.fastq
 
-sickle pe -t sanger -f /raw_data/mutant_Rep1_R1.fastq -r /raw_data/mutant_Rep1_R2.fastq -o /trimmed_reads/trimmed_mutant_Rep1_R1.fastq p /trimmed_reads/trimmed_mutant_Rep1_R2.fastq -l 45 -q 25 -s /trimmed_reads/singles_mutant_Rep1_R1.fastq
+sickle pe -t sanger -f ../raw_data/mutant_Rep2_R1.fastq -r ../raw_data/mutant_Rep2_R2.fastq -o trimmed_mutant_Rep2_R1.fastq -p trimmed_mutant_Rep2_R2.fastq -l 45 -q 25 -s singles_mutant_Rep2_R1.fastq
 
-sickle pe -t sanger -f /raw_data/mutant_Rep2_R1.fastq -r /raw_data/mutant_Rep2_R2.fastq -o /trimmed_reads/trimmed_mutant_Rep2_R1.fastq p /trimmed_reads/trimmed_mutant_Rep2_R2.fastq -l 45 -q 25 -s /trimmed_reads/singles_mutant_Rep2_R1.fastq
+sickle pe -t sanger -f ../raw_data/mutant_Rep3_R1.fastq -r ../raw_data/mutant_Rep3_R2.fastq -o trimmed_mutant_Rep3_R1.fastq -p trimmed_mutant_Rep3_R2.fastq -l 45 -q 25 -s singles_mutant_Rep3_R1.fastq
 
-sickle pe -t sanger -f /raw_data/mutant_Rep3_R1.fastq -r /raw_data/mutant_Rep3_R2.fastq -o /trimmed_reads/trimmed_mutant_Rep3_R1.fastq p /trimmed_reads/trimmed_mutant_Rep3_R2.fastq -l 45 -q 25 -s /trimmed_reads/singles_mutant_Rep3_R1.fastq
-
-                                                                                            
 </pre>
 <br>
+
+The full slurm script is called [sickle_run.sh](/trimmed_reads/sickle_run.sh) can be found in **trimmed_reads/** folder.  
+
 <pre style="color: silver; background: black;">-bash-4.2$ sbatch sickle_run.sh </pre>
 
-It is helpful to see how the quality of the data has changed after using sickle. To do this, we will be using the commandline versions of <a href="https://www.bio Informatics.babraham.ac.uk/projects/fastqc/INSTALL.txt">fastqc</a> and <a href="http://multiqc. Info/docs/">MultiQC</a>. These two programs simply create reports of the average quality of our trimmed reads, with some graphs. There is no way to view a --help menu for these programs in the command-line. However, their use is quite simple, we simply run "fastqc <trimmed_fastq>" or "multiqc -f -n trimmed trimmed*". Do not worry too much about the options for MultiQC! Let's write our script:
+It is helpful to see how the quality of the data has changed after using sickle. To do this, we will be using the commandline versions of <a href="https://www.bio Informatics.babraham.ac.uk/projects/fastqc/INSTALL.txt">fastqc</a> and <a href="http://multiqc. Info/docs/">MultiQC</a>. These two programs simply create reports of the average quality of our trimmed reads, with some graphs. There is no way to view a --help menu for these programs in the command-line. However, their use is quite simple, we simply run "fastqc <trimmed_fastq>" or "multiqc -f -n trimmed trimmed". Do not worry too much about the options for MultiQC! Let's write our script:
 
 <pre style="color: silver; background: black;">-bash-4.2$ nano quality_control.sh
-
-                                                                                                               
-
 #!/bin/bash
 #SBATCH --job-name=quality_control
 #SBATCH --mail-user=
@@ -267,25 +264,28 @@ export TMPDIR=/home/CAM/$USER/tmp/
 module load fastqc
 module load MultiQC
 
-mkdir -p ../trimmed_fastqc
+#Running in
+#trimmed_fastqc
 
-fastqc -t 4 -o ../trimmed_fastqc trimmed_wt_Rep1_R1.fastq trimmed_wt_Rep1_R2.fastq
+fastqc -t 4 ../trimmed_reads/trimmed_wt_Rep1_R1.fastq ../trimmed_reads/trimmed_wt_Rep1_R2.fastq
 
-fastqc -t 4 -o ../trimmed_fastqc trimmed_wt_Rep2_R1.fastq trimmed_wt_Rep2_R2.fastq
+fastqc -t 4 ../trimmed_reads/trimmed_wt_Rep2_R1.fastq ../trimmed_reads/trimmed_wt_Rep2_R2.fastq
 
-fastqc -t 4 -o ../trimmed_fastqc trimmed_wt_Rep3_R1.fastq trimmed_wt_Rep3_R2.fastq
+fastqc -t 4 ../trimmed_reads/trimmed_wt_Rep3_R1.fastq ../trimmed_reads/trimmed_wt_Rep3_R2.fastq
 
-fastqc -t 4 -o ../trimmed_fastqc trimmed_mutant_Rep1_R1.fastq trimmed_mutant_Rep1_R2.fastq
+fastqc -t 4 ../trimmed_reads/trimmed_mutant_Rep1_R1.fastq ../trimmed_reads/trimmed_mutant_Rep1_R2.fastq
 
-fastqc -t 4 -o ../trimmed_fastqc trimmed_mutant_Rep2_R1.fastq trimmed_mutant_Rep2_R2.fastq
+fastqc -t 4 ../trimmed_reads/trimmed_mutant_Rep2_R1.fastq ../trimmed_reads/trimmed_mutant_Rep2_R2.fastq
 
-fastqc -t 4 -o ../trimmed_fastqc trimmed_mutant_Rep3_R1.fastq trimmed_mutant_Rep3_R2.fastq
+fastqc -t 4 ../trimmed_reads/trimmed_mutant_Rep3_R1.fastq ../trimmed_reads/trimmed_mutant_Rep3_R2.fastq
 
-multiqc ../trimmed_fastqc
+multiqc -n trimmed_fastqc .
 
-                                                                                             [ Read 26 lines ]
 </pre>
 <br>
+
+The full slurm script [trimmed_fastqc.sh](/trimmed_fastqc/trimmed_fastqc.sh) can be found in **rimmed_fastqc/** folder.   
+
 <pre style="color: silver; background: black;">-bash-4.2$ sbatch quality_control.sh</pre>
 
 fastqc will create the files "trimmed_file_fastqc.html". To have a look at one, we need to move all of our "trimmed_file_fastqc.html" files into a single directory, and then <a href="https://www.techrepublic.com/article/how-to-use-secure-copy-for-file-transfer/">secure copy</a> that folder to our local directory. Then, we may open our files! If that seems like too much work for you, you may open the files directly through this github. Simply click on any "html" file and you may view it in your browser immediately. Because of this, the steps mentioned above will not be placed in this tutorial.
@@ -327,7 +327,7 @@ We see that our multiqc file has the same indices as our fastqc files, but is si
 
 No input sequence or sequence file specified!
 HISAT2 version 2.1.0 by Daehwan Kim ( Infphilo@gmail.com, http://www.ccb.jhu.edu/people/ Infphilo)
-<strong>Usage</strong>: hisat2-build [options]* <reference_in> <ht2_index_base>
+<strong>Usage</strong>: hisat2-build [options] <reference_in> <ht2_index_base>
 	reference_in            comma-separated list of files with ref sequences
 	hisat2_index_base       write ht2 data to files with this dir/basename</strong></pre>
 
@@ -379,6 +379,7 @@ Command
 -q: query input files in fastq format
 -S: output SAM file
 ```
+The full slurm script [hisat2_run.sh](/mapping/hisat2_run.sh) can be found in the **mapping/** directory.  
 
 You can run this using ` sbatch hisat2_run.sh`
 
@@ -546,25 +547,27 @@ export TMPDIR=/home/CAM/$USER/tmp/
 
 module load samtools
 
-samtools view -@ 8 -bhS ../mapping/wt_Rep1.sam -o ../mapping/wt_Rep1.bam
-samtools sort -@ 8 ../mapping/wt_Rep1.bam -o ../mapping/wt_Rep1_sort.bam
+samtools view -@ 8 -bhS wt_Rep1.sam -o wt_Rep1.bam
+samtools sort -@ 8 wt_Rep1.bam -o wt_Rep1_sort.bam
 
-samtools view -@ 8 -bhS ../mapping/wt_Rep2.sam -o ../mapping/wt_Rep2.bam
-samtools sort -@ 8 ../mapping/wt_Rep2.bam -o ../mapping/wt_Rep2_sort.bam
+samtools view -@ 8 -bhS wt_Rep2.sam -o wt_Rep2.bam
+samtools sort -@ 8 wt_Rep2.bam -o wt_Rep2_sort.bam
 
-samtools view -@ 8 -bhS ../mapping/wt_Rep3.sam -o ../mapping/wt_Rep3.bam
-samtools sort -@ 8 ../mapping/wt_Rep3.bam -o ../mapping/wt_Rep3_sort.bam
+samtools view -@ 8 -bhS wt_Rep3.sam -o wt_Rep3.bam
+samtools sort -@ 8 wt_Rep3.bam -o wt_Rep3_sort.bam
 
-samtools view -@ 8 -bhS ../mapping/mutant_Rep1.sam -o ../mapping/mutant_Rep1.bam
-samtools sort -@ 8 ../mapping/mutant_Rep1.bam -o ../mapping/mutant_Rep1_sort.bam
+samtools view -@ 8 -bhS mutant_Rep1.sam -o mutant_Rep1.bam
+samtools sort -@ 8 mutant_Rep1.bam -o mutant_Rep1_sort.bam
 
-samtools view -@ 8 -bhS ../mapping/mutant_Rep2.sam -o ../mapping/mutant_Rep2.bam
-samtools sort -@ 8 ../mapping/mutant_Rep2.bam -o ../mapping/mutant_Rep2_sort.bam
+samtools view -@ 8 -bhS mutant_Rep2.sam -o mutant_Rep2.bam
+samtools sort -@ 8 mutant_Rep2.bam -o mutant_Rep2_sort.bam
 
-samtools view -@ 8 -bhS ../mapping/mutant_Rep3.sam -o ../mapping/mutant_Rep3.bam
-samtools sort -@ 8 ../mapping/mutant_Rep3.bam -o ../mapping/mutant_Rep3_sort.bam
+samtools view -@ 8 -bhS mutant_Rep3.sam -o mutant_Rep3.bam
+samtools sort -@ 8 mutant_Rep3.bam -o mutant_Rep3_sort.bam
 
 </pre>
+
+The full slurm script [sam_sort_bam.sh ](/mapping/sam_sort_bam.sh) can be found in **mapping/** directory.  
 
 <pre style="color: silver; background: black;">bash-4.2$ sbatch sam_sort_bam.sh</pre>
 
@@ -644,20 +647,22 @@ mkdir -p ../ballgown/{athaliana_wt_Rep1,athaliana_wt_Rep2,athaliana_wt_Rep3,atha
 
 module load stringtie
 
-stringtie -e -B -p 8 ../mapping/wt_Rep1_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o ../counts/athaliana_wt_Rep1/athaliana_wt_Rep1.count -A ../counts/athaliana_wt_Rep1/wt_Rep1_gene_abun.out
+stringtie -e -B -p 8 ../mapping/wt_Rep1_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_wt_Rep1/athaliana_wt_Rep1.count -A athaliana_wt_Rep1/wt_Rep1_gene_abun.out
 
-stringtie -e -B -p 8 ../mapping/wt_Rep2_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o ../counts/athaliana_wt_Rep2/athaliana_wt_Rep2.count -A ../counts/athaliana_wt_Rep2/wt_Rep2_gene_abun.out
+stringtie -e -B -p 8 ../mapping/wt_Rep2_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_wt_Rep2/athaliana_wt_Rep2.count -A athaliana_wt_Rep2/wt_Rep2_gene_abun.out
 
-stringtie -e -B -p 8 ../mapping/wt_Rep3_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o ../counts/athaliana_wt_Rep3/athaliana_wt_Rep3.count -A ../counts/athaliana_wt_Rep3/wt_Rep3_gene_abun.out
+stringtie -e -B -p 8 ../mapping/wt_Rep3_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_wt_Rep3/athaliana_wt_Rep3.count -A athaliana_wt_Rep3/wt_Rep3_gene_abun.out
 
-stringtie -e -B -p 8 ../mapping/mutant_Rep1_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o ../counts/athaliana_mutant_Rep1/athaliana_mutant_Rep1.count -A ../counts/athaliana_mutant_Rep1/mutant_Rep1_gene_abun.out
+stringtie -e -B -p 8 ../mapping/mutant_Rep1_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_mutant_Rep1/athaliana_mutant_Rep1.count -A athaliana_mutant_Rep1/mutant_Rep1_gene_abun.out
 
-stringtie -e -B -p 8 ../mapping/mutant_Rep2_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o ../counts/athaliana_mutant_Rep2/athaliana_mutant_Rep2.count -A ../counts/athaliana_mutant_Rep2/mutant_Rep2_gene_abun.out
+stringtie -e -B -p 8 ../mapping/mutant_Rep2_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_mutant_Rep2/athaliana_mutant_Rep2.count -A athaliana_mutant_Rep2/mutant_Rep2_gene_abun.out
 
-stringtie -e -B -p 8 ../mapping/mutant_Rep3_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o ../counts/athaliana_mutant_Rep3/athaliana_mutant_Rep3.count -A ../counts/athaliana_mutant_Rep3/mutant_Rep3_gene_abun.out
+stringtie -e -B -p 8 ../mapping/mutant_Rep3_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_mutant_Rep3/athaliana_mutant_Rep3.count -A athaliana_mutant_Rep3/mutant_Rep3_gene_abun.out
 
 
 </pre>
+
+The full slurm script is [stringtie.sh](/ballgown/stringtie.sh) can be found in **ballgown/** folder.  
 
 The following files will be genrated from the above command
 
@@ -794,7 +799,7 @@ sample<-c("athaliana_mutant_Rep1","athaliana_mutant_Rep2", "athaliana_mutant_Rep
 type<-c(rep("mutant",3),rep("wt",3))
 pheno_df<-data.frame("sample"=sample,"type"=type)
 rownames(pheno_df)<-pheno_df[,1]
-pheno_f
+pheno_df
 <strong>                                     sample   type
 athaliana_mutant_Rep1 athaliana_mutant_Rep1 mutant
 athaliana_mutant_Rep2 athaliana_mutant_Rep2 mutant
