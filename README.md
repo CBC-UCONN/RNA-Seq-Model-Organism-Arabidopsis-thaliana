@@ -51,18 +51,31 @@ In this tutorial each major section is diveded in to folders so you can follow i
 
 We know that the SRA contain the read sequences and accessory meta Information from experiments. Rather than downloading experimental data through a browser, we may use the <a href="https://www.ncbi.nlm.nih.gov/books/NBK158900/">sratoolkit</a>'s "fastq-dump" function to directly dump raw read data into the current terminal directory. Let's have a look at this function (it is expected that you have read the Xanadu tutorial, and are familiar with loading modules):
 
-<pre style="color: silver; background: black;">-bash-4.2$ module load sratoolkit
+To load the module and to check the options you can simply type `fastq-dump` once you load the module in the terminal window.
+```bash
+module load sratoolkit
+
+fastq-dump
+```
+
+Which will show you the following options it has:
+```
   fastq-dump [options] <path> [<path>...]
   fastq-dump [options] <accession>
 
 Use option --help for more  Information
 
-fastq-dump : 2.8.2 </pre>
+fastq-dump : 2.8.2 
+```
 
 For our needs, we will simply be using the accession numbers to dump our experimental data into our directory. We know our accession numbers, so let's write a shell script to retrieve our raw reads. There are a variety of text editors available on Xanadu. My preferred text editor is "nano". Therefore, we will be using nano to write our shell script.
 
-<pre style="color: silver; background: black;">-bash-4.2$ nano data_dump.sh
+``` 
+nano data_dump.sh
+```
+
                                                                                                      
+```bash
 
 #!/bin/bash
 #SBATCH --job-name=data_dump
@@ -104,7 +117,7 @@ mv SRR8428905_2.fastq EE_Rep2_R2.fastq
 fastq-dump --split-files SRR8428904
 mv SRR8428904_1.fastq EE_Rep3_R1.fastq
 mv SRR8428904_2.fastq EE_Rep3_R2.fastq
-</pre>
+```
 
 The full slurm script is called [data_dump.sh](/raw_data/data_dump.sh) can be found in **raw_data/** folder.  
 
