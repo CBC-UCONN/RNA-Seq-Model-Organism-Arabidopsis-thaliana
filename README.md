@@ -31,25 +31,20 @@ You may connect to Xanadu via SSH, which will place you in your home directory
 Your home directory contains 2TB of storage and will not pollute the capacities of other users on the cluster. 
 
 The workflow may be cloned into the appropriate directory using the terminal command:
-<pre style="color: silver; background: black;">-bash-4.2$ git clone https://github.com/CBC-UCONN/RNA-Seq-Model-Organism-Arabidopsis-thaliana.git
--bash-4.2$ cd rnaseq_for_model_plant
--bash-4.2$ ls
--bash-4.2$ cd rnaseq_for_model_plant/
--bash-4.2$ ls
-<strong>all_clusters.csv.png           README.md
-complete_edge_list.csv.png     Rplot.png
-cytoscape1.png                 sam_sort_bam.sh
-cytoscape2.png                 sickle_run.sh
-cytoscape3.png                 transcript_assembly.sh
-cytoscape4.png                 trimmed.html
-cytoscape5.png                 trimmed_SRR3498212_fastqc.html
-data_dump.sh                   trimmed_SRR3498213_fastqc.html
-hisat2_run.sh                  trimmed_SRR3498215_fastqc.html
-pcaplot_for_all_libraries.png  trimmed_SRR3498216_fastqc.html
-quality_control.sh
-</strong>
-</pre>
+```bash
+git clone https://github.com/CBC-UCONN/RNA-Seq-Model-Organism-Arabidopsis-thaliana.git
+```
+Then change the directory to the **RNA-Seq-Model-Organism-Arabidopsis-thaliana/** folder, where you can see the following folder structure:  
+```
+RNA-Seq-Model-Organism-Arabidopsis-thaliana
+├── raw_data
+├── trimmed_reads
+├── trimmed_fastqc
+├── mapping
+└── ballgown
+```
 
+In this tutorial each major section is diveded in to folders so you can follow it easily. As you go you can navigate to each folder, as each section directs you to, and follow the instructions. 
 
 
 <h2 id="Second_Point_Header">Accessing the data using sra-toolkit </h2>
