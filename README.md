@@ -99,16 +99,16 @@ mv SRR8428907_1.fastq wt_Rep3_R1.fastq
 mv SRR8428907_2.fastq wt_Rep3_R2.fastq
 
 fastq-dump --split-files SRR8428906
-mv SRR8428906_1.fastq mutant_Rep1_R1.fastq
-mv SRR8428906_2.fastq mutant_Rep1_R2.fastq
+mv SRR8428906_1.fastq EE_Rep1_R1.fastq
+mv SRR8428906_2.fastq EE_Rep1_R2.fastq
 
 fastq-dump --split-files SRR8428905
-mv SRR8428905_1.fastq mutant_Rep2_R1.fastq
-mv SRR8428905_2.fastq mutant_Rep2_R2.fastq
+mv SRR8428905_1.fastq EE_Rep2_R1.fastq
+mv SRR8428905_2.fastq EE_Rep2_R2.fastq
 
 fastq-dump --split-files SRR8428904
-mv SRR8428904_1.fastq mutant_Rep3_R1.fastq
-mv SRR8428904_2.fastq mutant_Rep3_R2.fastq
+mv SRR8428904_1.fastq EE_Rep3_R1.fastq
+mv SRR8428904_2.fastq EE_Rep3_R2.fastq
 </pre>
 
 The full slurm script is called [data_dump.sh](/raw_data/data_dump.sh) can be found in **raw_data/** folder.  
@@ -124,7 +124,7 @@ Now we wait until we receive an email that our process has finished.
 Let's take a look at one of our files:
 
 ```bash
--bash-4.2$ head mutant_Rep1_R1.fastq
+-bash-4.2$ head EE_Rep1_R1.fastq
 @SRR8428906.1 1 length=150
 CCTGAACAACTCATCAGCGGTAAAGAAGATGCAGCTAACAATTTCGCCCGTGGTCATTACACCATTGGGAAAGAGATTGTTGACCTGTGCTTAGACCGTATCAGAAAGCTTGCTGATAACTGTACTGGTCTCCAAGGATTCCTCGTCTTC
 +SRR8428906.1 1 length=150
@@ -224,11 +224,11 @@ sickle pe -t sanger -f ../raw_data/wt_Rep2_R1.fastq -r ../raw_data/wt_Rep2_R2.fa
 
 sickle pe -t sanger -f ../raw_data/wt_Rep3_R1.fastq -r ../raw_data/wt_Rep3_R2.fastq -o trimmed_wt_Rep3_R1.fastq -p trimmed_wt_Rep3_R2.fastq -l 4 5-q 25 -s singles_wt_Rep3_R1.fastq
 
-sickle pe -t sanger -f ../raw_data/mutant_Rep1_R1.fastq -r ../raw_data/mutant_Rep1_R2.fastq -o trimmed_mutant_Rep1_R1.fastq -p trimmed_mutant_Rep1_R2.fastq -l 45 -q 25 -s singles_mutant_Rep1_R1.fastq
+sickle pe -t sanger -f ../raw_data/EE_Rep1_R1.fastq -r ../raw_data/EE_Rep1_R2.fastq -o trimmed_EE_Rep1_R1.fastq -p trimmed_EE_Rep1_R2.fastq -l 45 -q 25 -s singles_EE_Rep1_R1.fastq
 
-sickle pe -t sanger -f ../raw_data/mutant_Rep2_R1.fastq -r ../raw_data/mutant_Rep2_R2.fastq -o trimmed_mutant_Rep2_R1.fastq -p trimmed_mutant_Rep2_R2.fastq -l 45 -q 25 -s singles_mutant_Rep2_R1.fastq
+sickle pe -t sanger -f ../raw_data/EE_Rep2_R1.fastq -r ../raw_data/EE_Rep2_R2.fastq -o trimmed_EE_Rep2_R1.fastq -p trimmed_EE_Rep2_R2.fastq -l 45 -q 25 -s singles_EE_Rep2_R1.fastq
 
-sickle pe -t sanger -f ../raw_data/mutant_Rep3_R1.fastq -r ../raw_data/mutant_Rep3_R2.fastq -o trimmed_mutant_Rep3_R1.fastq -p trimmed_mutant_Rep3_R2.fastq -l 45 -q 25 -s singles_mutant_Rep3_R1.fastq
+sickle pe -t sanger -f ../raw_data/EE_Rep3_R1.fastq -r ../raw_data/EE_Rep3_R2.fastq -o trimmed_EE_Rep3_R1.fastq -p trimmed_EE_Rep3_R2.fastq -l 45 -q 25 -s singles_EE_Rep3_R1.fastq
 
 </pre>
 <br>
@@ -267,11 +267,11 @@ fastqc -t 4 ../trimmed_reads/trimmed_wt_Rep2_R1.fastq ../trimmed_reads/trimmed_w
 
 fastqc -t 4 ../trimmed_reads/trimmed_wt_Rep3_R1.fastq ../trimmed_reads/trimmed_wt_Rep3_R2.fastq
 
-fastqc -t 4 ../trimmed_reads/trimmed_mutant_Rep1_R1.fastq ../trimmed_reads/trimmed_mutant_Rep1_R2.fastq
+fastqc -t 4 ../trimmed_reads/trimmed_EE_Rep1_R1.fastq ../trimmed_reads/trimmed_EE_Rep1_R2.fastq
 
-fastqc -t 4 ../trimmed_reads/trimmed_mutant_Rep2_R1.fastq ../trimmed_reads/trimmed_mutant_Rep2_R2.fastq
+fastqc -t 4 ../trimmed_reads/trimmed_EE_Rep2_R1.fastq ../trimmed_reads/trimmed_EE_Rep2_R2.fastq
 
-fastqc -t 4 ../trimmed_reads/trimmed_mutant_Rep3_R1.fastq ../trimmed_reads/trimmed_mutant_Rep3_R2.fastq
+fastqc -t 4 ../trimmed_reads/trimmed_EE_Rep3_R1.fastq ../trimmed_reads/trimmed_EE_Rep3_R2.fastq
 
 multiqc -n trimmed_fastqc .
 
@@ -357,11 +357,11 @@ hisat2 -p 8 --dta -x /isg/shared/databases/alignerIndex/plant/Arabidopsis/thalia
 
 hisat2 -p 8 --dta -x /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/athaliana10/athaliana10 -1 ../trimmed_reads/trimmed_wt_Rep3_R1.fastq -2 ../trimmed_reads/trimmed_wt_Rep3_R2.fastq -S ../mapping/wt_Rep3.sam
 
-hisat2 -p 8 --dta -x /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/athaliana10/athaliana10 -1 ../trimmed_reads/trimmed_mutant_Rep1_R1.fastq -2 ../trimmed_reads/trimmed_mutant_Rep1_R2.fastq -S ../mapping/_mutant_Rep1.sam
+hisat2 -p 8 --dta -x /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/athaliana10/athaliana10 -1 ../trimmed_reads/trimmed_EE_Rep1_R1.fastq -2 ../trimmed_reads/trimmed_EE_Rep1_R2.fastq -S ../mapping/_EE_Rep1.sam
 
-hisat2 -p 8 --dta -x /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/athaliana10/athaliana10 -1 ../trimmed_reads/trimmed_mutant_Rep2_R1.fastq -2 ../trimmed_reads/trimmed_mutant_Rep2_R2.fastq -S ../mapping/_mutant_Rep2.sam
+hisat2 -p 8 --dta -x /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/athaliana10/athaliana10 -1 ../trimmed_reads/trimmed_EE_Rep2_R1.fastq -2 ../trimmed_reads/trimmed_EE_Rep2_R2.fastq -S ../mapping/_EE_Rep2.sam
 
-hisat2 -p 8 --dta -x /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/athaliana10/athaliana10 -1 ../trimmed_reads/trimmed_mutant_Rep3_R1.fastq -2 ../trimmed_reads/trimmed_mutant_Rep3_R2.fastq -S ../mapping/_mutant_Rep3.sam
+hisat2 -p 8 --dta -x /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/athaliana10/athaliana10 -1 ../trimmed_reads/trimmed_EE_Rep3_R1.fastq -2 ../trimmed_reads/trimmed_EE_Rep3_R2.fastq -S ../mapping/_EE_Rep3.sam
 
 ```
 
@@ -382,9 +382,9 @@ Once the mapping have been completed, the file structure is as follows:
 <strong>wt_Rep1.sam
 wt_Rep2.sam
 wt_Rep3.sam
-mutant_Rep1.sam
-mutant_Rep2.sam
-mutant_Rep3.sam
+EE_Rep1.sam
+EE_Rep2.sam
+EE_Rep3.sam
 </strong></pre>
 
 When HISAT2 completes its run, it will summarize each of it’s alignments, and it is written to the standard error file, which can be found in the same folder once the run is completed.
@@ -550,14 +550,14 @@ samtools sort -@ 8 wt_Rep2.bam -o wt_Rep2_sort.bam
 samtools view -@ 8 -bhS wt_Rep3.sam -o wt_Rep3.bam
 samtools sort -@ 8 wt_Rep3.bam -o wt_Rep3_sort.bam
 
-samtools view -@ 8 -bhS mutant_Rep1.sam -o mutant_Rep1.bam
-samtools sort -@ 8 mutant_Rep1.bam -o mutant_Rep1_sort.bam
+samtools view -@ 8 -bhS EE_Rep1.sam -o EE_Rep1.bam
+samtools sort -@ 8 EE_Rep1.bam -o EE_Rep1_sort.bam
 
-samtools view -@ 8 -bhS mutant_Rep2.sam -o mutant_Rep2.bam
-samtools sort -@ 8 mutant_Rep2.bam -o mutant_Rep2_sort.bam
+samtools view -@ 8 -bhS EE_Rep2.sam -o EE_Rep2.bam
+samtools sort -@ 8 EE_Rep2.bam -o EE_Rep2_sort.bam
 
-samtools view -@ 8 -bhS mutant_Rep3.sam -o mutant_Rep3.bam
-samtools sort -@ 8 mutant_Rep3.bam -o mutant_Rep3_sort.bam
+samtools view -@ 8 -bhS EE_Rep3.sam -o EE_Rep3.bam
+samtools sort -@ 8 EE_Rep3.bam -o EE_Rep3_sort.bam
 
 </pre>
 
@@ -637,7 +637,7 @@ Just as was stated for our conversion from gff to gtf, it would be helpful for u
 
 export TMPDIR=/home/CAM/$USER/tmp/
 
-mkdir -p ../ballgown/{athaliana_wt_Rep1,athaliana_wt_Rep2,athaliana_wt_Rep3,athaliana_mutant_Rep1,athaliana_mutant_Rep2,athaliana_mutant_Rep3}
+mkdir -p ../ballgown/{athaliana_wt_Rep1,athaliana_wt_Rep2,athaliana_wt_Rep3,athaliana_EE_Rep1,athaliana_EE_Rep2,athaliana_EE_Rep3}
 
 module load stringtie
 
@@ -647,11 +647,11 @@ stringtie -e -B -p 8 ../mapping/wt_Rep2_sort.bam -G /isg/shared/databases/aligne
 
 stringtie -e -B -p 8 ../mapping/wt_Rep3_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_wt_Rep3/athaliana_wt_Rep3.count -A athaliana_wt_Rep3/wt_Rep3_gene_abun.out
 
-stringtie -e -B -p 8 ../mapping/mutant_Rep1_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_mutant_Rep1/athaliana_mutant_Rep1.count -A athaliana_mutant_Rep1/mutant_Rep1_gene_abun.out
+stringtie -e -B -p 8 ../mapping/EE_Rep1_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_EE_Rep1/athaliana_EE_Rep1.count -A athaliana_EE_Rep1/EE_Rep1_gene_abun.out
 
-stringtie -e -B -p 8 ../mapping/mutant_Rep2_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_mutant_Rep2/athaliana_mutant_Rep2.count -A athaliana_mutant_Rep2/mutant_Rep2_gene_abun.out
+stringtie -e -B -p 8 ../mapping/EE_Rep2_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_EE_Rep2/athaliana_EE_Rep2.count -A athaliana_EE_Rep2/EE_Rep2_gene_abun.out
 
-stringtie -e -B -p 8 ../mapping/mutant_Rep3_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_mutant_Rep3/athaliana_mutant_Rep3.count -A athaliana_mutant_Rep3/mutant_Rep3_gene_abun.out
+stringtie -e -B -p 8 ../mapping/EE_Rep3_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_EE_Rep3/athaliana_EE_Rep3.count -A athaliana_EE_Rep3/EE_Rep3_gene_abun.out
 
 
 </pre>
@@ -781,7 +781,7 @@ Because of the structure of our ballgown directory, we may use dataDir = "ballgo
 We want all of the objects in our arguments to be in the same order as they are present in the ballgown directory. Therefore, we want our pData matrix to have two columns -- the first column being the samples as they appear in the ballgown directory, and the second being the phenotype of each sample in the column before it (root or shoot). Let's see the order of our sample files:
 
 <pre style="color: silver; background: black;">list.files("ballgown/")
-<strong>[1] "athaliana_mutant_Rep1" "athaliana_mutant_Rep2" "athaliana_mutant_Rep3"
+<strong>[1] "athaliana_EE_Rep1" "athaliana_EE_Rep2" "athaliana_EE_Rep3"
 [4] "athaliana_wt_Rep1"     "athaliana_wt_Rep2"     "athaliana_wt_Rep3" </strong></pre>
 
 Now we construct a 6x2 phenotype matrix with the first column being our samples in order and the second each sample's phenotype:
@@ -789,15 +789,15 @@ Now we construct a 6x2 phenotype matrix with the first column being our samples 
 <pre style="color: silver; background: black;">pheno_data = c("athaliana_root_1", "athaliana_root_2", "athaliana_shoot_1",  "athaliana_shoot_2","root","root","shoot","shoot")</pre>
 
 <pre style="color: silver; background: black;">
-sample<-c("athaliana_mutant_Rep1","athaliana_mutant_Rep2", "athaliana_mutant_Rep3", "athaliana_wt_Rep1", "athaliana_wt_Rep2", "athaliana_wt_Rep3" )
-type<-c(rep("mutant",3),rep("wt",3))
+sample<-c("athaliana_EE_Rep1","athaliana_EE_Rep2", "athaliana_EE_Rep3", "athaliana_wt_Rep1", "athaliana_wt_Rep2", "athaliana_wt_Rep3" )
+type<-c(rep("EE",3),rep("wt",3))
 pheno_df<-data.frame("sample"=sample,"type"=type)
 rownames(pheno_df)<-pheno_df[,1]
 pheno_df
 <strong>                                     sample   type
-athaliana_mutant_Rep1 athaliana_mutant_Rep1 mutant
-athaliana_mutant_Rep2 athaliana_mutant_Rep2 mutant
-athaliana_mutant_Rep3 athaliana_mutant_Rep3 mutant
+athaliana_EE_Rep1 athaliana_EE_Rep1 EE
+athaliana_EE_Rep2 athaliana_EE_Rep2 EE
+athaliana_EE_Rep3 athaliana_EE_Rep3 EE
 athaliana_wt_Rep1         athaliana_wt_Rep1     wt
 athaliana_wt_Rep2         athaliana_wt_Rep2     wt
 athaliana_wt_Rep3         athaliana_wt_Rep3     wt</strong></pre>
@@ -1004,10 +1004,10 @@ Let's have a look at r:
 <pre style="color: silver; background: black;">
 r
 
-<strong style="color:blue;">                           FPKM.athaliana_mutant_Rep1 FPKM.athaliana_mutant_Rep2 FPKM.athaliana_mutant_Rep3 FPKM.athaliana_wt_Rep1 FPKM.athaliana_wt_Rep2 FPKM.athaliana_wt_Rep3
-FPKM.athaliana_mutant_Rep1                  1.0000000                  0.9689147                  0.9701448              0.9617423              0.9738848              0.9716859
-FPKM.athaliana_mutant_Rep2                  0.9689147                  1.0000000                  0.9713023              0.9659690              0.9676161              0.9644472
-FPKM.athaliana_mutant_Rep3                  0.9701448                  0.9713023                  1.0000000              0.9668139              0.9684712              0.9649888
+<strong style="color:blue;">                           FPKM.athaliana_EE_Rep1 FPKM.athaliana_EE_Rep2 FPKM.athaliana_EE_Rep3 FPKM.athaliana_wt_Rep1 FPKM.athaliana_wt_Rep2 FPKM.athaliana_wt_Rep3
+FPKM.athaliana_EE_Rep1                  1.0000000                  0.9689147                  0.9701448              0.9617423              0.9738848              0.9716859
+FPKM.athaliana_EE_Rep2                  0.9689147                  1.0000000                  0.9713023              0.9659690              0.9676161              0.9644472
+FPKM.athaliana_EE_Rep3                  0.9701448                  0.9713023                  1.0000000              0.9668139              0.9684712              0.9649888
 FPKM.athaliana_wt_Rep1                      0.9617423                  0.9659690                  0.9668139              1.0000000              0.9606613              0.9631253
 FPKM.athaliana_wt_Rep2                      0.9738848                  0.9676161                  0.9684712              0.9606613              1.0000000              0.9733014
 FPKM.athaliana_wt_Rep3                      0.9716859                  0.9644472                  0.9649888              0.9631253              0.9733014              1.0000000</strong>
@@ -1021,10 +1021,10 @@ Rather than calculate the similarity, it would be nicer to calculate the dissimi
 d = 1 - r
 d
 <strong style="color:blue;">
-                           FPKM.athaliana_mutant_Rep1 FPKM.athaliana_mutant_Rep2 FPKM.athaliana_mutant_Rep3 FPKM.athaliana_wt_Rep1 FPKM.athaliana_wt_Rep2 FPKM.athaliana_wt_Rep3
-FPKM.athaliana_mutant_Rep1                 0.00000000                 0.03108533                 0.02985520             0.03825768             0.02611516             0.02831408
-FPKM.athaliana_mutant_Rep2                 0.03108533                 0.00000000                 0.02869768             0.03403101             0.03238395             0.03555277
-FPKM.athaliana_mutant_Rep3                 0.02985520                 0.02869768                 0.00000000             0.03318614             0.03152878             0.03501125
+                           FPKM.athaliana_EE_Rep1 FPKM.athaliana_EE_Rep2 FPKM.athaliana_EE_Rep3 FPKM.athaliana_wt_Rep1 FPKM.athaliana_wt_Rep2 FPKM.athaliana_wt_Rep3
+FPKM.athaliana_EE_Rep1                 0.00000000                 0.03108533                 0.02985520             0.03825768             0.02611516             0.02831408
+FPKM.athaliana_EE_Rep2                 0.03108533                 0.00000000                 0.02869768             0.03403101             0.03238395             0.03555277
+FPKM.athaliana_EE_Rep3                 0.02985520                 0.02869768                 0.00000000             0.03318614             0.03152878             0.03501125
 FPKM.athaliana_wt_Rep1                     0.03825768                 0.03403101                 0.03318614             0.00000000             0.03933872             0.03687471
 FPKM.athaliana_wt_Rep2                     0.02611516                 0.03238395                 0.03152878             0.03933872             0.00000000             0.02669858
 FPKM.athaliana_wt_Rep3                     0.02831408                 0.03555277                 0.03501125             0.03687471             0.02669858             0.00000000</strong>
@@ -1073,9 +1073,9 @@ We expect pca to have four rows, each row corresponding to a sample, and two col
 pca
 
 <strong style="color:blue;">                                   [,1]          [,2]
-FPKM.athaliana_mutant_Rep1  0.010188699  0.0037862309
-FPKM.athaliana_mutant_Rep2 -0.007391951  0.0125768089
-FPKM.athaliana_mutant_Rep3 -0.006736291  0.0104882107
+FPKM.athaliana_EE_Rep1  0.010188699  0.0037862309
+FPKM.athaliana_EE_Rep2 -0.007391951  0.0125768089
+FPKM.athaliana_EE_Rep3 -0.006736291  0.0104882107
 FPKM.athaliana_wt_Rep1     -0.021280708 -0.0133394678
 FPKM.athaliana_wt_Rep2      0.013442569  0.0001839026
 FPKM.athaliana_wt_Rep3      0.011777681 -0.0136956852</strong>
@@ -1396,4 +1396,5 @@ Created visual gene topologial networks
 Extracted computational  Information about those networks</pre>
 
 While our work may have seemed completed after creating the visualization, the picture itself is not of much use to other scientists! However, all of the csv files we created are. A scientist may have an interest in one particular gene we studied. With our differential expression results output she will be able to determine how the gene's behavior varied according to phenotype. Perhaps she wants to begin investigating if one gene codes for a transcription factor of another. She can consult our gene complete clusters file and see if the two genes belong to the same cluster (as the activation of one will activate the other!). She may be interested in the total behavior of one cluster in activating or suppressing another cluster. She can determine her base and target clusters by locating the genes in our complete clusters file, extract all genes from those clusters, and then explore how downstream each cluster's effect may be by utilizing the degree of relationship csv. Bio Informatics is a collaborative field. We are always dependent on the work of others to solve the questions about which we are the most passionate. Because of this, it is important to always dig deep in your own analysis, and to create as readable and handy data as you can. Not only because you do not want another scientist to be lost in your files, but they must be readable by a computer! Sometimes, it may have felt like we were going down the rabbit hole in this tutorial. However, the  Information we compiled is easy and immediately helpful for fellow scientists to use. Congratulations on finishing this tutorial successfully!
+
 
