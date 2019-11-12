@@ -28,7 +28,7 @@ You may connect to Xanadu via SSH, which will place you in your home directory
 
 <pre style="color: silver; background: black;">-bash-4.2$ cd /home/CAM/$USER</pre> 
 
-Your home directory contains 10TB of storage and will not pollute the capacities of other users on the cluster. 
+Your home directory contains 2TB of storage and will not pollute the capacities of other users on the cluster. 
 
 The workflow may be cloned into the appropriate directory using the terminal command:
 <pre style="color: silver; background: black;">-bash-4.2$ git clone https://github.com/CBC-UCONN/RNA-Seq-Model-Organism-Arabidopsis-thaliana.git
@@ -50,11 +50,7 @@ quality_control.sh
 </strong>
 </pre>
 
-All of the completed scripts for this tutorial are available for you to submit. However, before submitting, you may want to edit the scripts to include your email!
 
-Before beginning, we need to understand a few aspects of the Xanadu server. When first logging into Xanadu from your local terminal, you will be connected to the submit node. The submit node is the interface with which users on Xanadu may <i>submit</i> their processes to the desired compute nodes, which will run the process. Never, under any circumstance, run processes directly in the submit node. Your process will be killed and all of your work lost! This tutorial will not teach you shell script configuration to submit your tasks on Xanadu. Therefore, before moving on, read and master the topics covered in the <a href="https://bio Informatics.uconn.edu/resources-and-events/tutorials/xanadu/">Xanadu tutorial</a>.
-
-Now that we have covered the introduction and objective of our analysis, we may begin!
 
 <h2 id="Second_Point_Header">Accessing the data using sra-toolkit </h2>
 
@@ -196,7 +192,7 @@ Global options
 --help, display this help and exit
 --version, output version information and exit</pre>
 
-The quality may be any score from 0 to 40. The default of 20 is much too low for a robust analysis. We want to select only reads with a quality of 35 or better. Additionally, the desired length of each read is 50bp. Again, we see that a default of 20 is much too low for analysis confidence. We want to select only reads whose lengths exceed 45bp. Lastly, we must know the scoring type. While the quality type is not listed on the SRA pages, most SRA reads use the "sanger" quality type. Unless explicitly stated, try running sickle using the sanger qualities. If an error is returned, try illumina. If another error is returned, lastly try solexa.
+The quality may be any score from 0 to 40. The default of 20 is much too low for a robust analysis. We want to select only reads with a quality of 35 or better. Additionally, the desired length of each read is 50bp. Again, we see that a default of 20 is much too low for analysis confidence. We want to select only reads whose lengths exceed 45bp. Lastly, we must know the scoring type. While the quality type is not listed on the SRA pages, most SRA reads use the "sanger" quality type. Unless explicitly stated, try running sickle using the sanger qualities. 
 
 Let's put all of this together for our sickle script using our downloaded fastq files:
 
@@ -286,7 +282,7 @@ The full slurm script [trimmed_fastqc.sh](/trimmed_fastqc/trimmed_fastqc.sh) can
 
 <pre style="color: silver; background: black;">-bash-4.2$ sbatch quality_control.sh</pre>
 
-fastqc will create the files "trimmed_file_fastqc.html". To have a look at one, we need to move all of our "trimmed_file_fastqc.html" files into a single directory, and then <a href="https://www.techrepublic.com/article/how-to-use-secure-copy-for-file-transfer/">secure copy</a> that folder to our local directory. Then, we may open our files! If that seems like too much work for you, you may open the files directly through this github. Simply click on any "html" file and you may view it in your browser immediately. Because of this, the steps mentioned above will not be placed in this tutorial.
+fastqc will create the files "trimmed_file_fastqc.html". To have a look at one, we need to move all of our "trimmed_file_fastqc.html" files into a single directory, and then <a href="https://www.techrepublic.com/article/how-to-use-secure-copy-for-file-transfer/">secure copy</a> that folder to our local directory. Then, we may open our files! 
 
 This script will also create a directory "trimmed_data". Let's look inside of that directory:
 
