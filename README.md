@@ -303,11 +303,10 @@ multiqc_general_stats.txt  multiqc_sources.txt
 Let's have a look at the file format from fastqc and multiqc. When loading the fastqc file, you will be greeted with this screen:
 <img src="fastqc1.png">
 
-There are some basic statistics which are all pretty self-explanatory. Notice that none of our sequences fail the quality report! It would be concerning if we had even one because this report is from our trimmed sequence! The same thinking applies to our sequence length. Should the minimum of the sequence length be below 45, we would know that sickle had not run properly. Let's look at the next index in the file:
+There are some basic statistics which are all pretty self-explanatory. 
 <img src="fastqc2.png">
 
-This screen is simply a <a href="https://en.wikipedia.org/wiki/Box_plot">box-and-whiskers plot</a> of our quality scores per base pair. Note that there is a large variance and lower mean scores (but still about in our desired range) for base pairs 1-5. These are the primer sequences! I will leave it to you to ponder the behavior of this graph. If you're stumped, you may want to learn how <a href="https://www.illumina.com/techniques/sequencing.html">Illumina sequencing"</a> works.
-
+This screen is simply a <a href="https://en.wikipedia.org/wiki/Box_plot">box-and-whiskers plot</a> of our quality scores per base pair. 
 Our next index is the per sequence quality scores:
 <img src="fastqc3.png">
 
@@ -333,7 +332,7 @@ HISAT2 version 2.1.0 by Daehwan Kim ( Infphilo@gmail.com, http://www.ccb.jhu.edu
 	reference_in            comma-separated list of files with ref sequences
 	hisat2_index_base       write ht2 data to files with this dir/basename</strong></pre>
 
-As you can see, we simply enter our reference genome files and the desired prefix for our .ht2 files. Now, fortunately for us, Xanadu has many indexed genomes which we may use. To see if there is a hisat2 <i>Arabidopsis thaliana</i> indexed genome we need to look at the <a href="https://bio Informatics.uconn.edu/databases/">Xanadu databases</a> page. We see that our desired indexed genome is in the location /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/Athaliana_HISAT2/. Now we are ready to align our reads using hisat2 (for hisat2, the script is going to be written first with an explanation of the options after).
+As you can see, we simply enter our reference genome files and the desired prefix for our .ht2 files. Now, fortunately for us, Xanadu has many indexed genomes which we may use. To see if there is a hisat2 <i>Arabidopsis thaliana</i> indexed genome we need to look at the <a href="https://bioinformatics.uconn.edu/databases/">Xanadu databases</a> page. We see that our desired indexed genome is in the location /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/Athaliana_HISAT2/. Now we are ready to align our reads using hisat2 (for hisat2, the script is going to be written first with an explanation of the options after).
 
 ```bash
 nano hisat2_run.sh
@@ -397,7 +396,7 @@ EE_Rep3.sam
 
 When HISAT2 completes its run, it will summarize each of it’s alignments, and it is written to the standard error file, which can be found in the same folder once the run is completed.
 
-<pre style="color: silver; background: black;">bash-4.2$ nano hisat2_run&#42;err
+<pre style="color: silver; background: black;">bash-4.2$ less hisat2_run&#42;err
 
                                                                                                           
 
@@ -862,12 +861,9 @@ genomesubset	if TRUE, subset x to a specific part of the genome. Otherwise, subs
 To use subset, you must provide the cond argument as a string representing a logical expression specifying your desired subset. The subset expression can either involve column names of texpr(x, "all") (if genomesubset is TRUE) or of pData(x) (if genomesubset is FALSE). For example, if you wanted a ballgown object for only chromosome 22, you might call subset(x, "chr == 'chr22'"). (Be sure to handle quotes within character strings appropriately).</pre>
 
 <br>
+</pre>
 
-<pre style="color: silver; background: black;">bg_filtered=subset(bg, "rowVars(texpr(bg))>1")</pre>
-
-We follow the guide and subset our ballgown object under the condition that the row-variances of the expression data are greater than one, keeping the gene names.</pre>
-
-To perform the isoform differential expression analysis we use ballgown's "stattest" function. Let's have a look at it:
+To perform the differential expression analysis we use ballgown's "stattest" function. Let's have a look at it:
 <pre style="color: silver; background: black;">??ballgown::stattest</pre>
 
 <pre><strong style="color: blue;">statistical tests for differential expression in ballgown</strong>
@@ -1002,7 +998,7 @@ Now we will generate a <a href="http://setosa.io/ev/principal-component-analysis
 
 Let's create a vector with our PCA point names
 <pre style="color: silver; background: black;">
-short_names = c("mu1","mu2","mu3","wt1","wt2","wt3")</pre>
+short_names = c("EE1","EE2","EE3","wt1","wt2","wt3")</pre>
 We are going to be using the <a href="https://en.wikipedia.org/wiki/Pearson_correlation_coefficient">Pearson coefficient</a> for our PCA plot. You may think of the Pearson coefficient simply as a measure of similarity. If two datasets are very similar, they will have a Pearson coefficient approaching 1 (every data compared to itself has a Pearson coefficient of 1). If two datasets are very dissimilar, they will have a Pearson coefficient approaching 0 Let's calculate a vector containing the correlation coefficient:
 
 <pre style="color: silver; background: black;">
