@@ -832,8 +832,8 @@ The ballgown object `bg` stores the fpkm values corresponding to genes.  Before 
 head(gene_expression)
 boxplot(log10(gene_expression+1),names=c("EE1","EE2","EE3","WT1","WT2","WT3"),col=c("red", "red","red","blue", "blue","blue"))
 </pre>
-The bocplot below gives an overview of expression of fpkm values of different genes across different samples. We have log transformed the values to visualise it better and added 1 `gene_expression+1` to avoid errors if the fpkm values are 0.
-<img src=fpkm_box_plot.png></a><br>
+The boxplot below gives an overview of expression of fpkm values of different genes across different samples. We have log transformed the values to visualise it better and added 1 `gene_expression+1` to avoid errors if the fpkm values are 0.
+<img src="fpkm_box_plot.png"></a><br>
 
 
 To perform the differential expression analysis we use ballgown's "stattest" function. Let's have a look at it:
@@ -985,7 +985,7 @@ PC1  PC2  PC3  PC4  PC5  PC6
 </pre>
 Around 68.8% of the variance in the data can be explained by our geneset.  Which is pretty good.
 
-<img src="PC_variance_plot.png">
+<img src="PC_variance_plot.png" >
 
 
 
@@ -998,7 +998,7 @@ text(pc$x[,1],pc$x[,2],pos=2,rownames(pc$x), col=c("red", "red","red","blue", "b
 </pre>
 
 As you can see that the PC1 component which explains around 70% variance in the dataset seprates the samples based on the conditions, i.e. WT and ectopic expression samples.  This is another terms explain that the major cause of variance in our samples is the conditions associated with the samples.
-<img src="pPCAplot_for_all_libraries.png">
+<img src="PCAplot_for_all_libraries.png" >
 
 
 We should take advantage while we have this results_genes object and annotate the genes we have deemed significant (p-values below 0.1, every gene now in this object). To annotate the genes we will be using <a href="https://www.bioconductor.org/packages/devel/bioc/html/biomaRt.html">biomaRt</a> and biomartr. You can install these with the following code:
