@@ -835,7 +835,6 @@ boxplot(log10(gene_expression+1),names=c("EE1","EE2","EE3","WT1","WT2","WT3"),co
 The boxplot below gives an overview of expression of fpkm values of different genes across different samples. We have log transformed the values to visualise it better and added 1 `gene_expression+1` to avoid errors if the fpkm values are 0.
 
 <img src="fpkm_box_plot.png"> </a><br>
-<img src="fpkm_box_plot.png">
 
 To perform the differential expression analysis we use ballgown's "stattest" function. Let's have a look at it:
 <pre style="color: silver; background: black;">??ballgown::stattest</pre>
