@@ -1003,7 +1003,7 @@ As you can see that the PC1 component which explains around 70% variance in the 
 <img src="PCAplot_for_all_libraries.png" >
 
 
-In this section we will aim to perform a functional annotation of differentially expressed genes identified in our analysis.  These genes are stored in `g_sign` object and we will use  `biomart` tool available on public databases to extract information using a R packages.  The functionalities demonstrated below are applicable to most public domain databases provided they support Biomart. Before getting into ‘R’ lets understand few key features of Ensembl database, the one we will be using. It is important to develop an understanding about Ensembl databases as this will help in extracting data from correct database.  Ensembl has 6 different sub domains
+In this section we will aim to perform a functional annotation of differentially expressed genes identified in our analysis.  These genes are stored in `g_sign` object and we will use  `biomart` tool available on public databases to extract information using a R packages.  The functionalities demonstrated below are applicable to most public domain databases provided they support Biomart. Before getting into `R studio` lets understand few key features of Ensembl database, the one we will be using for our annotation. It is important to develop an understanding about databases as this will help in extracting data from correct database.  Ensembl has 6 different sub domains
 1. Bacteria	:  bacteria.ensembl.org
 2. Fungi	:  fungi.ensembl.org
 3. Metazoa	: metazoan.ensembl.org
@@ -1013,13 +1013,13 @@ In this section we will aim to perform a functional annotation of differentially
 
 In order to get data we have to link to appropriate database.  In our case we will be using `plants.ensembl.org`.  
 
-Now let’s get some details on the R package `biomaRt`.  There are 3 main functions that are associated with this package
+Now let’s get some details on the R package `biomaRt`.  There are 3 main functions that are associated with this package are
 1. listFilters 		: Lists the available filters
 2. listAttributes	: Lists the available attributes
 3. getBM		: Performs the actual query and returns a data.frame
 
 While using `biomaRt` we have to make following choices
-1. Database referred as host (plants.ensembl.org)
+1. Database referred as host (for us it is plants.ensembl.org)
 2. Biomart 
 3. dataset
 4. filters (e.g. chromosome, scaffold,Gene  type, Transcript type, phenotype etc)
@@ -1038,8 +1038,9 @@ listMarts(host="plants.ensembl.org")
 1       plants_mart      Ensembl Plants Genes 45
 2 plants_variations Ensembl Plants Variations 45
 
-&#35;&#35; we would like to use the Ensembl Plants Genes information so the mart of choice is “plants_mart”
-&#35;&#35; Next lets get all the datasets that are associated with Arabidopsis thaliana
+&#35;&#35; we would like to use the "Ensembl Plants Genes 45" as we are interested in gene information 
+&#35;&#35; so the mart of choice is “plants_mart”
+&#35;&#35; Next lets get all the datasets that are associated with Arabidopsis thaliana from “plants_mart”
 
 mart=useMart("plants_mart", host="plants.ensembl.org")
 head(listDatasets(mart))[grep("thaliana",listDatasets(mart)[,1]),]
@@ -1048,12 +1049,13 @@ head(listDatasets(mart))[grep("thaliana",listDatasets(mart)[,1]),]
 5 athaliana_eg_gene Arabidopsis thaliana genes (TAIR10)  TAIR10
 
 &#35;&#35; There is one dataset"athaliana_eg_gene” holding information about Arabidopsis genes.
-&#35;&#35; Now what we need to identify is the filters and then the attributes before we extract the data.
+&#35;&#35; Now we need to identify is the filters and then the attributes before we extract the data.
 
-&#35;&#35; To get information on filters you can try this command, this will list out 206 filter"s with their name and description. We have to make choice from there
+&#35;&#35; To get information on filters you can try the command below. 
+&#35;&#35; This will list out 206 filters with their name and description. We have to make choice from there
 listFilters(thale_mart)
 
-&#35;&#35; to view tfirst 20 filters in the list
+&#35;&#35; to view first 20 filters in the list
 head(listFilters(thale_mart),20)
 
 &#35;&#35; we know that our gene list has Ensembl gene ids so lets check for filters having ‘ensembl’ key word in them
@@ -1065,10 +1067,11 @@ listFilters(thale_mart)[grep("ensembl",listFilters(thale_mart)[,1]),]
 37       ensembl_exon_id        Exon ID(s) [e.g. AT1G01010.1.exon1]
 
 &#35;&#35; Great so have to use ‘ ensembl_gene_id’ as filter, Now we have to find attributes corresponding to ensembl_gene_id .
-&#35;&#35; A point  note that the attributes are sometimes located on different pages , so our first goal is to find the page using searchAttributes(mart, pattern) function
+&#35;&#35; Please note that the attributes are sometimes located on different pages , 
+&#35;&#35; so our first goal is to find the page using searchAttributes(mart, pattern) function
 &#35;&#35; and then the attributes of that page using listAttributes(mart, page,what = c("name","description","page"))
 
-earchAttributes(mart = thale_mart, pattern = "ensembl_gene_id")
+searchAttributes(mart = thale_mart, pattern = "ensembl_gene_id")
                 name    description         page
 1    ensembl_gene_id Gene stable ID feature_page
 134  ensembl_gene_id Gene stable ID    structure
@@ -1090,9 +1093,9 @@ listAttributes(mart = thale_mart, page="feature_page")
 9                 strand                   Strand feature_page
 10                  band           Karyotype band feature_page
 
-&#35;&#35; from here we can see that the most relevant information could be “description”. So lets extract the information.
+&#35;&#35; we can see that the most relevant information could be “description”. So lets extract the information.
 &#35;&#35; You can explore more in the attributes and can choose as many as attributes you want.
-&#35;&#35; general syntax would be if I would like to have first 5 attributes
+&#35;&#35; general syntax would be for first 5 attributes
 &#35;&#35; getBM(attributes=c("ensembl_gene_id”,”ensembl_transcript_id”,”ensembl_peptide_id”,"ensembl_exon_id" ,”description"),mart=thale_mart)
 &#35;&#35; here we are picking description and GO term for the gene
 
