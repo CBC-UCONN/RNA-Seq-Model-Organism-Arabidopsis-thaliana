@@ -1003,277 +1003,170 @@ As you can see that the PC1 component which explains around 70% variance in the 
 <img src="PCAplot_for_all_libraries.png" >
 
 
-We should take advantage while we have this results_genes object and annotate the genes we have deemed significant (p-values below 0.1, every gene now in this object). To annotate the genes we will be using <a href="https://www.bioconductor.org/packages/devel/bioc/html/biomaRt.html">biomaRt</a> and biomartr. You can install these with the following code:
+In this section we will aim to perform a functional annotation of differentially expressed genes identified in our analysis.  These genes are stored in `g_sign` object and we will use  `biomart` tool available on public databases to extract information using a R packages.  The functionalities demonstrated below are applicable to most public domain databases provided they support Biomart. Before getting into ‘R’ lets understand few key features of Ensembl database, the one we will be using. It is important to develop an understanding about Ensembl databases as this will help in extracting data from correct database.  Ensembl has 6 different sub domains
+1. Bacteria	:  bacteria.ensembl.org
+2. Fungi	:  fungi.ensembl.org
+3. Metazoa	: metazoan.ensembl.org
+4. Plants	: plants.ensembl.org
+5. Protists	: protists.ensembl.org
+6. Vertebrates	:ensembl.org
+
+In order to get data we have to link to appropriate database.  In our case we will be using `plants.ensembl.org`.  
+
+Now let’s get some details on the R package `biomaRt`.  There are 3 main functions that are associated with this package
+1. listFilters 		: Lists the available filters
+2. listAttributes	: Lists the available attributes
+3. getBM		: Performs the actual query and returns a data.frame
+
+While using `biomaRt` we have to make following choices
+1. Database referred as host (plants.ensembl.org)
+2. Biomart 
+3. dataset
+4. filters (e.g. chromosome, scaffold,Gene  type, Transcript type, phenotype etc)
+5. Attributes (This reflect the attributes of the filter we are interested in e.g, Gene stable ID, Gene start, Gene end, GO terms, protein domain and families etc )
+
+Lets begin, and first we want to identify which Biomart to use from plants.ensembl.org
+
 <pre style="color: silver; background: black;">
-## try http:// if https:// URLs are not supported
-if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
 BiocManager::install(c("biomaRt"))
-install.packages("biomartr")</pre>
+install.packages("biomartr")
 
-The first step in annotating our genes of interest is to choose our database. We do this using the "useMart" function of biomaRt:
-<pre style="color: silver; background: black;">library(biomaRt)
-library(biomartr)
-??biomaRt::useMart
+library(biomaRt) 
+listMarts(host="plants.ensembl.org")
 
-useMart {biomaRt}	R Documentation
-Connects to the selected BioMart database and dataset
+            biomart                      version
+1       plants_mart      Ensembl Plants Genes 45
+2 plants_variations Ensembl Plants Variations 45
 
-<strong>Description</strong>
+&#35;&#35; we would like to use the Ensembl Plants Genes information so the mart of choice is “plants_mart”
+&#35;&#35; Next lets get all the datasets that are associated with Arabidopsis thaliana
 
-<em>A first step in using the biomaRt package is to select a BioMart database and dataset to use. The useMart function enables one to connect to a specified BioMart database and dataset within this database. To know which BioMart databases are available see the listMarts function. To know which datasets are available within a BioMart database, first select the BioMart database using useMart and then use the listDatasets function on the selected BioMart, see listDatasets function.</em>
+mart=useMart("plants_mart", host="plants.ensembl.org")
+head(listDatasets(mart))[grep("thaliana",listDatasets(mart)[,1]),]
 
-<strong>Usage</strong>
+           dataset                         description version
+5 athaliana_eg_gene Arabidopsis thaliana genes (TAIR10)  TAIR10
 
-useMart(biomart, dataset, host="www.ensembl.org",
-path="/biomart/martservice", port=80, archive=FALSE, ssl.verifypeer =
-TRUE, ensemblRedirect = NULL, version, verbose = FALSE)
-<strong>Arguments</strong>
+&#35;&#35; There is one dataset"athaliana_eg_gene” holding information about Arabidopsis genes.
+&#35;&#35; Now what we need to identify is the filters and then the attributes before we extract the data.
 
-biomart		BioMart database name you want to connect to. Possible database names can be retrieved with the functio listMarts
-dataset		Dataset you want to use. To see the different datasets available within a biomaRt you can e.g. do: mart = 
-		useMart('ensembl'), followed by listDatasets(mart).
-host		Host to connect to. Defaults to www.ensembl.org
-path		Path that should be pasted after to host to get access to the web service URL
-port		port to connect to, will be pasted between host and path 
-archive		Boolean to indicate if you want to access archived versions of BioMart databases. Note that this argument is now 
-		deprecated and will be removed in the future. A better alternative is to leave archive = FALSE and to specify the url 
-		of the archived BioMart you want to access. For Ensembl you can view the list of archives using listEnsemblArchives
-ssl.verifypeer	Set SSL peer verification on or off. By default ssl.verifypeer is set to TRUE
-ensemblRedirect	This argument has now been deprecated.
-version		Use version name instead of biomart name to specify which BioMart you want to use
-verbose		Give detailed output of what the method is doing while in use, for debugging</pre>
+&#35;&#35; To get information on filters you can try this command, this will list out 206 filter"s with their name and description. We have to make choice from there
+listFilters(thale_mart)
 
-A quick google search will show that the genome we used, TAIR10, is the Ensembl format of the thale cress. We are going to want to use the gene dataset. Let's verify that it is there following the instructions provided:
-<pre style="color: silver; background: black;">mart = useMart("ensembl")
- head(listDatasets(mart))
-<strong>                       dataset                           description     version
-1 abrachyrhynchus_gene_ensembl Pink-footed goose genes (ASM259213v1) ASM259213v1
-2     acalliptera_gene_ensembl      Eastern happy genes (fAstCal1.2)  fAstCal1.2
-3   acarolinensis_gene_ensembl        Anole lizard genes (AnoCar2.0)   AnoCar2.0
-4    acitrinellus_gene_ensembl        Midas cichlid genes (Midas_v5)    Midas_v5
-5        ahaastii_gene_ensembl    Great spotted kiwi genes (aptHaa1)     aptHaa1
-6    amelanoleuca_gene_ensembl                 Panda genes (ailMel1)     ailMel1</strong></pre>
+&#35;&#35; to view tfirst 20 filters in the list
+head(listFilters(thale_mart),20)
 
-We want to scan this for the thale cress. But first, let's make sure we can scan it, period:
+&#35;&#35; we know that our gene list has Ensembl gene ids so lets check for filters having ‘ensembl’ key word in them
+listFilters(thale_mart)[grep("ensembl",listFilters(thale_mart)[,1]),]
+                    name                                description
+34       ensembl_gene_id         Gene stable ID(s) [e.g. AT1G01010]
+35 ensembl_transcript_id Transcript stable ID(s) [e.g. AT1G01010.1]
+36    ensembl_peptide_id    Protein stable ID(s) [e.g. AT1G01010.1]
+37       ensembl_exon_id        Exon ID(s) [e.g. AT1G01010.1.exon1]
 
-<pre style="color: silver; background: black;">listDatasets(mart)[grep("ahaastii",listDatasets(mart)[,1]),]
-<strong>                dataset                        description version
-5 ahaastii_gene_ensembl Great spotted kiwi genes (aptHaa1) aptHaa1</strong></pre>
+&#35;&#35; Great so have to use ‘ ensembl_gene_id’ as filter, Now we have to find attributes corresponding to ensembl_gene_id .
+&#35;&#35; A point  note that the attributes are sometimes located on different pages , so our first goal is to find the page using searchAttributes(mart, pattern) function
+&#35;&#35; and then the attributes of that page using listAttributes(mart, page,what = c("name","description","page"))
 
-We subset the listDatasets(mart) dataframe to include all rows which have the substring "amelanoleuca" in them. The return is row 2, which we can easily verify matches the head of the dataframe. Now let's try it with our species, "thaliana":
-<pre style="color: silver; background: black;">listDatasets(mart)[grep("thaliana",listDatasets(mart)[,1]),]
-<strong>[1] dataset     description version    
-<0 rows> (or 0-length row.names)</strong></pre>
+earchAttributes(mart = thale_mart, pattern = "ensembl_gene_id")
+                name    description         page
+1    ensembl_gene_id Gene stable ID feature_page
+134  ensembl_gene_id Gene stable ID    structure
+168  ensembl_gene_id Gene stable ID     homologs
+1251 ensembl_gene_id Gene stable ID          snp
+1303 ensembl_gene_id Gene stable ID    sequences
 
-There is no match. The reason for this is that biomaRt defaults to animal model organisms! We need to access the plant database. Now let's try:
-<pre style="color: silver; background: black;">listMarts(host="plants.ensembl.org")
-<strong>            biomart                      version
-1       plants_mart      Ensembl Plants Genes 43
-2 plants_variations Ensembl Plants Variations 43</strong>
+listAttributes(mart = thale_mart, page="feature_page")
 
-##if you are confused by the use of the listMarts function, read the useMart guide above!
+&#35;&#35; This will list 133 attributes applicable to the page
+1        ensembl_gene_id           Gene stable ID feature_page
+2  ensembl_transcript_id     Transcript stable ID feature_page
+3     ensembl_peptide_id        Protein stable ID feature_page
+4        ensembl_exon_id           Exon stable ID feature_page
+5            description         Gene description feature_page
+6        chromosome_name Chromosome/scaffold name feature_page
+7         start_position          Gene start (bp) feature_page
+8           end_position            Gene end (bp) feature_page
+9                 strand                   Strand feature_page
+10                  band           Karyotype band feature_page
 
-mart = useMart("plants_mart", host="plants.ensembl.org")
-head(listDatasets(mart))
-<strong>              dataset                                      description         version
-1  achinensis_eg_gene Actinidia chinensis Red5 genes (Red5_PS1_1.69.0) Red5_PS1_1.69.0
-2    ahalleri_eg_gene              Arabidopsis halleri genes (Ahal2.2)         Ahal2.2
-3     alyrata_eg_gene                 Arabidopsis lyrata genes (v.1.0)           v.1.0
-4   atauschii_eg_gene               Aegilops tauschii genes (Aet v4.0)        Aet v4.0
-5   athaliana_eg_gene              Arabidopsis thaliana genes (TAIR10)          TAIR10
-6 atrichopoda_eg_gene             Amborella trichopoda genes (AMTR1.0)         AMTR1.0</strong>
+&#35;&#35; from here we can see that the most relevant information could be “description”. So lets extract the information.
+&#35;&#35; You can explore more in the attributes and can choose as many as attributes you want.
+&#35;&#35; general syntax would be if I would like to have first 5 attributes
+&#35;&#35; getBM(attributes=c("ensembl_gene_id”,”ensembl_transcript_id”,”ensembl_peptide_id”,"ensembl_exon_id" ,”description"),mart=thale_mart)
+&#35;&#35; here we are picking description and GO term for the gene
 
-##we see the thale cress as row 3! now we may choose our dataset:
-
-thale_mart = useMart("plants_mart",host="plants.ensembl.org",dataset="athaliana_eg_gene")
-head(thale_mart)
-<strong>Error in x[seq_len(n)] : object of type 'S4' is not subsettable</strong></pre>
-
-Our mart is in the <a href="http://adv-r.had.co.nz/S4.html">S4</a> class and not readable right now. We can process it by using the "getBM" function:
-<pre style="color: silver; background: black;">??biomaRt::getBM
-
-Retrieves  Information from the BioMart database
-
-<strong>Description</strong>
-
-<em>This function is the main biomaRt query function. Given a set of filters and corresponding values, it retrieves the user specified attributes from the BioMart database one is connected to.</em>
-
-<strong>Usage</strong>
-
-getBM(attributes, filters = "", values = "", mart, curl = NULL, 
-checkFilters = TRUE, verbose = FALSE, uniqueRows = TRUE, bmHeader = FALSE,
-quote = "\"")
-<strong>Arguments</strong>
-
-attributes	Attributes you want to retrieve. A possible list of attributes can be retrieved using the function listAttributes.
-filters		Filters (one or more) that should be used in the query. A possible list of filters can be retrieved using the function 
-		listFilters.
-values		Values of the filter, e.g. vector of affy IDs. If multiple filters are specified then the argument should be a list of 
-		vectors of which the position of each vector corresponds to the position of the filters in the filters argument.
-mart		object of class Mart, created with the useMart function.
-curl		An optional 'CURLHandle' object, that can be used to speed up getBM when used in a loop.
-checkFilters	Sometimes attributes where a value needs to be specified, for example upstream\_flank with value 20 for obtaining 
-		upstream sequence flank regions of length 20bp, are treated as filters in BioMarts. To enable such a query to work, one 
-		must specify the attribute as a filter and set checkFilters = FALSE for the query to work.
-verbose		When using biomaRt in webservice mode and setting verbose to TRUE, the XML query to the webservice will be printed.
-uniqueRows	If the result of a query contains multiple identical rows, setting this argument to TRUE (default) will result in 
-		deleting the duplicated rows in the query result at the server side.
-bmHeader	Boolean to indicate if the result retrieved from the BioMart server should include the data headers or not, defaults to 
-		FALSE. This should only be switched on if the default behavior results in errors, setting to on might still be able to 
-		retrieve your data in that case
-quote		Sometimes parsing of the results fails due to errors in the Ensembl data fields such as containing a quote, in such 
-		cases you can try to change the value of quote to try to still parse the results.
-
-<strong>Value</strong>
-
-A data.frame. There is no implicit mapping between its rows and the function arguments (e.g. filters, values), therefore make sure to have the relevant identifier(s) returned by specifying them in attributes. See Examples.</pre>
-
-Let's find out the attributes and filters by following the instructions in the vignette:
-<pre style="color: silver; background: black;">dim(listAttributes(thale_mart))
-<strong>[1] 1212    3</strong>
-
-##1118 attributes is too many for us to look through. They are ordered somewhat in prevalence of use.
-
-##let's look at the most commonly used attributes and see if they'll work for us
-
-head(listAttributes(thale_mart))
-<strong>                   name              description         page
-1       ensembl_gene_id           Gene stable ID feature_page
-2 ensembl_transcript_id     Transcript stable ID feature_page
-3    ensembl_peptide_id        Protein stable ID feature_page
-4       ensembl_exon_id           Exon stable ID feature_page
-5           description         Gene description feature_page
-6       chromosome_name Chromosome/scaffold name feature_page</strong>
-
-##we don't know the chromosome name, so we can just take attributes 1,3, and 5
-
-thale_data_frame = getBM(attributes=c("ensembl_gene_id","ensembl_peptide_id","description"),mart=thale_mart)
+thale_data_frame = getBM(attributes=c("ensembl_gene_id","description","name_1006"),mart=thale_mart)
 head(thale_data_frame)
-<strong>
-  ensembl_gene_id ensembl_peptide_id                              description
-1       AT3G11415                                                            
-2       AT1G31258                       other RNA [Source:TAIR;Acc:AT1G31258]
-3       AT5G24735                       other RNA [Source:TAIR;Acc:AT5G24735]
-4       AT2G45780                       other RNA [Source:TAIR;Acc:AT2G45780]
-5       AT2G42425                    Unknown gene [Source:TAIR;Acc:AT2G42425]
-6       AT4G01533                       other RNA [Source:TAIR;Acc:AT4G01533]</pre></strong>
+  ensembl_gene_id                              description name_1006
+1       AT3G11415                                                   
+2       AT1G31258    other RNA [Source:TAIR;Acc:AT1G31258]          
+3       AT5G24735    other RNA [Source:TAIR;Acc:AT5G24735]          
+4       AT2G45780    other RNA [Source:TAIR;Acc:AT2G45780]          
+5       AT2G42425 Unknown gene [Source:TAIR;Acc:AT2G42425]          
+6       AT4G01533    other RNA [Source:TAIR;Acc:AT4G01533]          
+tail(thale_data_frame)
+       ensembl_gene_id                                                                                  description
+208287       AT5G16970  NADPH-dependent oxidoreductase 2-alkenal reductase [Source:UniProtKB/Swiss-Prot;Acc:Q39172]
+208288       AT5G16970  NADPH-dependent oxidoreductase 2-alkenal reductase [Source:UniProtKB/Swiss-Prot;Acc:Q39172]
+208289       AT5G16970  NADPH-dependent oxidoreductase 2-alkenal reductase [Source:UniProtKB/Swiss-Prot;Acc:Q39172]
+208290       AT4G32100 Beta-1,3-N-Acetylglucosaminyltransferase family protein [Source:UniProtKB/TrEMBL;Acc:F4JTI5]
+208291       AT4G32100 Beta-1,3-N-Acetylglucosaminyltransferase family protein [Source:UniProtKB/TrEMBL;Acc:F4JTI5]
+208292       AT4G32100 Beta-1,3-N-Acetylglucosaminyltransferase family protein [Source:UniProtKB/TrEMBL;Acc:F4JTI5]
+                                                name_1006
+208287                                            plastid
+208288                                          cytoplasm
+208289                       response to oxidative stress
+208290                            cell fate determination
+208291 transferase activity, transferring glycosyl groups
+208292                               transferase activity
 
-The default descriptions are certainly underwhelming. Let's see if there are any other types of descriptions we can get:
+ 
+&#35;&#35; Now match the genes from our list to this dataset.
+annotated_genes = subset(thale_data_frame, ensembl_gene_id %in% g_sign$id)
+dim(g_sign)
+[1] 388   6
+> dim(annotated_genes )
+[1] 2378    3
 
-<pre style="color: silver; background: black;">listAttributes(thale_mart)[grep("descr",listAttributes(thale_mart)[,1]),]
-<strong>                           name                description         page
-5                   description           Gene description feature_page
-34       goslim_goa_description     GOSlim GOA Description feature_page
-113  interpro_short_description Interpro Short Description feature_page
-114        interpro_description       Interpro Description feature_page
-151                 description           Gene description    structure
-178                 description           Gene description     homologs
-1133                description           Gene description          snp
-1136         source_description Variant source description          snp
-1174                description           Gene description    sequences</strong></pre>
+> head(annotated_genes)
+    ensembl_gene_id                                       description name_1006
+61        AT5G22788             other RNA [Source:TAIR;Acc:AT5G22788]          
+90        AT5G38005             other RNA [Source:TAIR;Acc:AT5G38005]          
+109       AT1G21529                                                            
+182       AT2G07042             other RNA [Source:TAIR;Acc:AT2G07042]          
+220       AT2G05995             other RNA [Source:TAIR;Acc:AT2G05995]          
+588       AT2G46685 MIR166/MIR166A; miRNA [Source:TAIR;Acc:AT2G46685]          
+> tail(annotated_genes)
+       ensembl_gene_id
+207261       AT1G24575
+207262       AT1G24575
+208133       AT4G26490
+208134       AT4G26490
+208135       AT4G26490
+208136       AT4G26490
+                                                                                                          description
+207261                                                                 At1g24575 [Source:UniProtKB/TrEMBL;Acc:Q8LAL6]
+207262                                                                 At1g24575 [Source:UniProtKB/TrEMBL;Acc:Q8LAL6]
+208133 Late embryogenesis abundant (LEA) hydroxyproline-rich glycoprotein family [Source:UniProtKB/TrEMBL;Acc:Q56Y59]
+208134 Late embryogenesis abundant (LEA) hydroxyproline-rich glycoprotein family [Source:UniProtKB/TrEMBL;Acc:Q56Y59]
+208135 Late embryogenesis abundant (LEA) hydroxyproline-rich glycoprotein family [Source:UniProtKB/TrEMBL;Acc:Q56Y59]
+208136 Late embryogenesis abundant (LEA) hydroxyproline-rich glycoprotein family [Source:UniProtKB/TrEMBL;Acc:Q56Y59]
+                            name_1006
+207261             biological_process
+207262              helicase activity
+208133             biological_process
+208134                       membrane
+208135 integral component of membrane
+208136                plasma membrane
 
-Using the other descriptions will take much, much longer as the  Information is extracted from the appropriate databases via internet connection. For this tutorial we will be sticking with our un-impressive descriptions. However, you may choose the description best for you and your resesarch. Before we move on to annotating, let's have a look at the filters:
 
-<pre style="color: silver; background: black;">head(listFilters(thale_mart))
-<strong>                name                            description
-1    chromosome_name               Chromosome/scaffold name
-2              start                                  Start
-3                end                                    End
-4             strand                                 Strand
-5 chromosomal_region e.g. 1:100:10000:-1, 1:100000:200000:1
-6        with_chembl                      With ChEMBL ID(s)</strong></pre>
-
-Should we only want to annotate genes from a specific chromosome or any other critera, we would use the "filter" argument in getBM to select only the subset of the genome we desire. We now have all of the pieces required for us to annotate our results. Let's have a look at our gene results object and our thale cress data frame one more time:
-<pre style="color: silver; background: black;">head(thale_data_frame)
-<strong>  ensembl_gene_id ensembl_peptide_id                              description
-1       AT3G11415                                                            
-2       AT1G31258                       other RNA [Source:TAIR;Acc:AT1G31258]
-3       AT5G24735                       other RNA [Source:TAIR;Acc:AT5G24735]
-4       AT2G45780                       other RNA [Source:TAIR;Acc:AT2G45780]
-5       AT2G42425                    Unknown gene [Source:TAIR;Acc:AT2G42425]
-6       AT4G01533                       other RNA [Source:TAIR;Acc:AT4G01533]</strong>
-
-head(results_genes)
-<strong>feature        id        fc        pval      qval
-1    gene AT1G01050 0.8216286 0.038409878 0.9996177
-2    gene AT1G01060 1.2906809 0.825960521 0.9996177
-3    gene AT1G01080 0.8156244 0.276868361 0.9996177
-4    gene AT1G01090 1.0838842 0.009539157 0.9996177
-5    gene AT1G01100 0.9755726 0.687152148 0.9996177
-6    gene AT1G01110 0.9522035 0.706397431 0.9996177</strong></pre>
-
-Funny enough, we do not actually use a biomaRt function to annotate our genes! We can simply subset the thale cress data frame to consist of only rows whose ensemble_gene_id matches our results_genes id. Let's give it a try:
-<pre style="color: silver; background: black;">annotated_genes = subset(thale_data_frame, ensembl_gene_id %in% results_genes$id)
-head(annotated_genes)
-<strong>    ensembl_gene_id ensembl_peptide_id                                                                                 description
-15         AT3G48115                                                                          other RNA [Source:TAIR;Acc:AT3G48115]
-151        AT4G04223                                                                          other RNA [Source:TAIR;Acc:AT4G04223]
-588        AT2G46685                                                              MIR166/MIR166A; miRNA [Source:TAIR;Acc:AT2G46685]
-2239       AT2G18917                                                                          other RNA [Source:TAIR;Acc:AT2G18917]
-2380       AT4G38932                    Potential natural antisense gene, locus overlaps with AT4G38930 [Source:TAIR;Acc:AT4G38932]
-5312       AT1G77590        AT1G77590.1    Long chain acyl-CoA synthetase 9, chloroplastic [Source:UniProtKB/Swiss-Prot;Acc:Q9CAP8]</strong>
-
-##let's check our dimensions to ensure every gene was annotated
-
-dim(results_genes)
-<strong>[1] 117   5</strong>
-
-dim(annotated_genes)
-<strong>[1] 254   3</strong>
-
-##our dimensions do not match! Let's investigate:
-
-head(annotated_genes)
-<strong> ensembl_gene_id ensembl_peptide_id                                                                                 description
-15         AT3G48115                                                                          other RNA [Source:TAIR;Acc:AT3G48115]
-151        AT4G04223                                                                          other RNA [Source:TAIR;Acc:AT4G04223]
-588        AT2G46685                                                              MIR166/MIR166A; miRNA [Source:TAIR;Acc:AT2G46685]
-2239       AT2G18917                                                                          other RNA [Source:TAIR;Acc:AT2G18917]
-2380       AT4G38932                    Potential natural antisense gene, locus overlaps with AT4G38930 [Source:TAIR;Acc:AT4G38932]
-5312       AT1G77590        AT1G77590.1    Long chain acyl-CoA synthetase 9, chloroplastic [Source:UniProtKB/Swiss-Prot;Acc:Q9CAP8]</strong>
-
-tail(annotated_genes)
-<strong>      ensembl_gene_id ensembl_peptide_id                                                                                                    description
-52922       AT5G21930        AT5G21930.4                        Copper-transporting ATPase PAA2, chloroplastic [Source:UniProtKB/Swiss-Prot;Acc:B9DFX7]
-52923       AT5G21930        AT5G21930.1                        Copper-transporting ATPase PAA2, chloroplastic [Source:UniProtKB/Swiss-Prot;Acc:B9DFX7]
-53221       AT1G80290        AT1G80290.1                        Nucleotide-diphospho-sugar transferases superfamily protein [Source:TAIR;Acc:AT1G80290]
-53222       AT1G80290        AT1G80290.2                        Nucleotide-diphospho-sugar transferases superfamily protein [Source:TAIR;Acc:AT1G80290]
-53365       AT1G26670        AT1G26670.1                                                                 VTI1B [Source:UniProtKB/TrEMBL;Acc:A0A178W140]
-53499       AT4G26490        AT4G26490.1 Late embryogenesis abundant (LEA) hydroxyproline-rich glycoprotein family [Source:UniProtKB/TrEMBL;Acc:Q56Y59]</strong></pre>
-
-A-ha. We see the mismatch in dimension length is due to some genes having different isoforms and therefore different peptide ids. Because we matched our data frames by gene id, some of the genes we have extracted multiple peptides! Also, take notice of this:
-
-<pre style="color: silver; background: black;">annotated_genes$ensembl_gene_id
-<strong>  [1] "AT3G48115" "AT4G04223" "AT2G46685" "AT2G18917" "AT4G38932" "AT1G77590" "AT1G77590" "AT5G09480" "AT3G58760" "AT3G58760"
- [11] "AT3G58760" "AT3G58760" "AT3G58760" "AT3G58760" "AT5G09650" "AT4G36430" "AT5G23570" "AT5G23570" "AT5G23570" "AT5G23570"
- [21] "AT4G07990" "AT4G07990" "AT4G07990" "AT3G21720" "AT3G48240" "AT5G16660" "AT5G16660" "AT3G14070" "AT1G20680" "AT1G20680"
- [31] "AT5G21920" "AT5G21920" "AT3G20570" "AT3G56910" "AT2G19110" "AT2G19110" "AT2G19110" "AT5G44450" "AT5G44450" "AT3G24820"
- [41] "AT5G18550" "AT5G18550" "AT5G18550" "AT5G18550" "AT3G27830" "AT3G27830" "AT1G18680" "AT5G11980" "AT5G11980" "AT1G78200"
- [51] "AT1G78200" "AT1G78200" "AT1G78200" "AT1G78200" "AT1G63110" "AT1G63110" "AT1G63110" "AT4G14880" "AT4G14880" "AT4G14880"
- [61] "AT4G14880" "AT4G14880" "AT4G12230" "AT2G46680" "AT2G46680" "AT5G09995" "AT5G09995" "AT5G09995" "AT3G49810" "AT1G80560"
- [71] "AT3G58550" "AT4G24020" "AT4G24020" "AT5G49990" "AT5G49990" "AT5G49990" "AT5G49990" "AT2G43560" "AT2G43560" "AT3G53490"
- [81] "AT5G10450" "AT5G10450" "AT5G10450" "AT5G10450" "AT5G07020" "AT2G45950" "AT2G45950" "AT2G45950" "AT2G45950" "AT2G45950"
- [91] "AT5G22450" "AT5G22450" "AT5G22450" "AT2G43190" "AT2G43190" "AT2G43190" "AT2G43190" "AT2G43190" "AT1G26762" "AT5G48960"
-[101] "AT1G11905" "AT1G11905" "AT2G37920" "AT1G77570" "AT5G07460" "AT5G44580" "AT3G62730" "AT3G62730" "AT5G65120" "AT5G65120"
-[111] "AT4G01037" "AT1G06190" "AT1G06190" "AT1G06190" "AT1G06190" "AT1G06190" "AT3G08910" "AT1G15980" "AT1G78370" "AT1G58360"
-[121] "AT1G01090" "AT1G63860" "AT1G63860" "AT1G63860" "AT1G63860" "AT1G63860" "AT1G63860" "AT4G23710" "AT3G18870" "AT5G21040"
-[131] "AT5G21040" "AT5G21040" "AT4G31420" "AT4G31420" "AT3G05510" "AT3G05510" "AT5G38895" "AT5G38895" "AT5G38895" "AT4G30630"
-[141] "AT4G30630" "AT1G02560" "AT2G21510" "AT2G21510" "AT2G21510" "AT2G21510" "AT2G21510" "AT5G56190" "AT5G56190" "AT5G56190"
-[151] "AT5G56190" "AT5G56190" "AT5G56190" "AT5G56190" "AT1G67950" "AT1G67950" "AT1G67950" "AT1G67950" "AT1G05710" "AT1G05710"
-[161] "AT1G05710" "AT1G05710" "AT1G05710" "AT1G05710" "AT1G05710" "AT1G05710" "AT1G05710" "AT1G05710" "AT1G05710" "AT1G05710"
-[171] "AT1G05710" "AT1G05710" "AT1G73720" "AT5G62680" "AT1G07950" "AT1G07950" "AT1G16560" "AT1G16560" "AT1G16560" "AT1G16560"
-[181] "AT1G16560" "AT1G16560" "AT1G16560" "AT1G16560" "AT1G16560" "AT5G65810" "AT2G18090" "AT2G18090" "AT2G26340" "AT2G26340"
-[191] "AT1G75460" "AT1G31940" "AT4G19230" "AT4G19230" "AT4G11370" "AT4G19006" "AT4G19006" "AT2G21640" "AT1G14400" "AT1G14400"
-[201] "AT1G12050" "AT5G52020" "AT3G52150" "AT3G52150" "AT2G36885" "AT2G36885" "AT2G40060" "AT1G51570" "AT1G07640" "AT1G07640"
-[211] "AT1G07640" "AT5G24780" "AT5G24780" "AT1G02750" "AT1G02750" "AT1G78040" "AT1G78040" "AT1G78040" "AT2G35550" "AT2G35550"
-[221] "AT2G35550" "AT2G35550" "AT3G61530" "AT3G61530" "AT1G70760" "AT3G19390" "AT5G42830" "AT1G23060" "AT1G23060" "AT1G23060"
-[231] "AT1G23060" "AT1G23060" "AT3G56170" "AT2G18150" "AT4G24220" "AT4G24220" "AT4G09060" "AT4G09060" "AT4G26950" "AT4G26950"
-[241] "AT2G37790" "AT5G17210" "AT5G17210" "AT5G43066" "AT1G10430" "AT1G10430" "AT5G21930" "AT5G21930" "AT5G21930" "AT5G21930"
-[251] "AT1G80290" "AT1G80290" "AT1G26670" "AT4G26490"</strong>
+&#35;&#35; The same gene can be associated with multiple go terms , as seen for AT4G26490, and that is the reason why the dimensions of the datasets are not matching.
+&#35;&#35;We successfully completed the annotation of our gene list. Lets write the output to a csv file.
 
 write.csv(file="annotated_genes.csv",annotated_genes,row.names=F)</pre>
 
+</pre>
 
 <h2 id="Seventh_Point_Header">Topological networking using cytoscape</h2>
 
