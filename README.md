@@ -733,8 +733,10 @@ To begin we must download and load the proper packages:
 
 <pre style="color: silver; background: black;">install.packages("devtools")
 install.packages("RFLPtools")
-source("http://www.bioconductor.org/biocLite.R")
-biocLite(c("alyssafrazee/RSkittleBrewer","ballgown", "genefilter", "dplyr", "devtools"))
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install(c("alyssafrazee/RSkittleBrewer","ballgown", "genefilter", "dplyr", "devtools"))
+
 
 library(ballgown)
 library(RSkittleBrewer)
@@ -1004,8 +1006,9 @@ As you can see that the PC1 component which explains around 70% variance in the 
 We should take advantage while we have this results_genes object and annotate the genes we have deemed significant (p-values below 0.1, every gene now in this object). To annotate the genes we will be using <a href="https://www.bioconductor.org/packages/devel/bioc/html/biomaRt.html">biomaRt</a> and biomartr. You can install these with the following code:
 <pre style="color: silver; background: black;">
 ## try http:// if https:// URLs are not supported
-source("https://bioconductor.org/biocLite.R")
-biocLite("biomaRt")
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install(c("biomaRt"))
 install.packages("biomartr")</pre>
 
 The first step in annotating our genes of interest is to choose our database. We do this using the "useMart" function of biomaRt:
