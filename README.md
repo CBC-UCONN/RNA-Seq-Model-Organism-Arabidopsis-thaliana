@@ -998,7 +998,7 @@ text(pc$x[,1],pc$x[,2],pos=2,rownames(pc$x), col=c("red", "red","red","blue", "b
 </pre>
 
 As you can see that the PC1 component which explains around 70% variance in the dataset seprates the samples based on the conditions, i.e. WT and ectopic expression samples.  This is another terms explain that the major cause of variance in our samples is the conditions associated with the samples.
-<img src="pcaplot_for_all_libraries.png">
+<img src="pPCAplot_for_all_libraries.png">
 
 
 We should take advantage while we have this results_genes object and annotate the genes we have deemed significant (p-values below 0.1, every gene now in this object). To annotate the genes we will be using <a href="https://www.bioconductor.org/packages/devel/bioc/html/biomaRt.html">biomaRt</a> and biomartr. You can install these with the following code:
