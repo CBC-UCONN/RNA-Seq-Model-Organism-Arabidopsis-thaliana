@@ -899,18 +899,7 @@ getFC = TRUE, meas = "FPKM")
 
 results_genes = stattest(bg, feature="gene" , covariate = "type" , getFC = TRUE, meas = "FPKM")</pre>
 
-Let's take a look at this object:
-
-<pre style="color: silver; background: black;">head(results_genes)
-<strong>   feature        id        fc       pval      qval
-1    gene AT1G01010 0.8087079 0.38793773 0.9981114
-2    gene AT1G01020 0.9421945 0.64827785 0.9981114
-3    gene AT1G01030 0.8025982 0.31221966 0.9981114
-4    gene AT1G01040 1.0508155 0.78611712 0.9981114
-5    gene AT1G01046 2.0228448 0.07153084 0.9981114
-6    gene AT1G01050 0.7928742 0.01064636 0.9981114</strong></pre>
-
-The changes in expression in all genes is listed, alongside its ID, fold-change (percent increase), <a href="https://en.wikipedia.org/wiki/P-value">p-value</a>, and <a href="http://www.statisticshowto.com/q-value/">q-value</a>. It is a good idea to have foldchange (fc) log2 transformed as it is easy to understand the fold change values. A negative value will indicate downregulation and positive value as upregulation of genes between the conditions. 
+Let's take a look at this object. The changes in expression in all genes is listed, alongside its ID, fold-change (percent increase), <a href="https://en.wikipedia.org/wiki/P-value">p-value</a>, and <a href="http://www.statisticshowto.com/q-value/">q-value</a>. It is a good idea to have foldchange (fc) log2 transformed as it is easy to understand the fold change values. A negative value will indicate downregulation and positive value as upregulation of genes between the conditions. 
 
 <pre style="color: silver; background: black;">
 results_genes["log2fc"]<-log2(results_genes$fc)
