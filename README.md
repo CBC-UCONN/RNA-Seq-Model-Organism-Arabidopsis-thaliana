@@ -11,8 +11,9 @@ This repository is a usable, publicly available tutorial for analyzing different
 <li><a href="#Fourth_Point_Header">4 Aligning reads to a genome using hisat2</a></li>
 <li><a href="#Fifth_Point_Header">5 Transcript assembly and quantification with StringTie</a></li>
 <li><a href="#Sixth_Point_Header">6 Differential expression analysis using ballgown</a></li>
-<li><a href="#Seventh_Point_Header">7 Topological networking using cytoscape</a></li>
- <li><a href="#Eighth_Point_Header">8 Conclusion</a></li>
+<li><a href="#Seventh_Point_Header">7 Gene annotation with BiomaRt</a></li>
+<li><a href="#Eighth_Point_Header">8 Topological networking using cytoscape</a></li>
+<li><a href="#ninth_Point_Header">8 Conclusion</a></li>
 </ul>
 </div>
 
@@ -1002,6 +1003,7 @@ text(pc$x[,1],pc$x[,2],pos=2,rownames(pc$x), col=c("red", "red","red","blue", "b
 As you can see that the PC1 component which explains around 70% variance in the dataset seprates the samples based on the conditions, i.e. WT and ectopic expression samples.  This is another terms explain that the major cause of variance in our samples is the conditions associated with the samples.
 <img src="PCAplot_for_all_libraries.png" >
 
+<h2 id="Seventh_Point_Header">Gene annotation with BiomaRt</h2>
 
 In this section we will aim to perform a functional annotation of differentially expressed genes identified in our analysis.  These genes are stored in `g_sign` object and we will use  `biomart` tool available on public databases to extract information using a R packages.  The functionalities demonstrated below are applicable to most public domain databases provided they support Biomart. Before getting into `R studio` lets understand few key features of Ensembl database, the one we will be using for our annotation. It is important to develop an understanding about databases as this will help in extracting data from correct database.  Ensembl has 6 different sub domains
 1. Bacteria	:  bacteria.ensembl.org
@@ -1171,7 +1173,7 @@ write.csv(file="annotated_genes.csv",annotated_genes,row.names=F)</pre>
 
 </pre>
 
-<h2 id="Seventh_Point_Header">Topological networking using cytoscape</h2>
+<h2 id="Eighth_Point_Header">Topological networking using cytoscape</h2>
 
 <a href="https://github.com/miriamposner/cytoscape_tutorials">Cytoscape</a> is a desktop program which creates visual topological networks of data. To visualise our differentially regulated genes in a network on cytoscape we will follow the following steps
 
@@ -1191,7 +1193,7 @@ Once the genes with differential expression is loaded, select the "Style tab and
 This will highlight the nodes based on the value of fc for protein present in differentially expressed genes and in the network list.<img src="cytoscape_a9.png">
 
 
-<h2 id="Eighth_Point_Header">Conclusion</h2>
+<h2 id="ninth_Point_Header">Conclusion</h2>
 You may find yourself wondering exactly what it is that we acccomplished by the end of this analysis. First, to recap we:
 
 <pre style="color: silver; background: black;">Downloaded experimental data
