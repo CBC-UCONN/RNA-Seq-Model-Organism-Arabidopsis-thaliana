@@ -824,44 +824,17 @@ Thu May  2 22:33:56 2019: Merging transcript data
 Wrapping up the results
 Thu May  2 22:33:56 2019</strong>
 
-head(texpr(bg))
-
 </pre>
-We filter our ballgown object to take only genes with <a href="https://en.wikipedia.org/wiki/Variance">variances</a> above 1 
-using <a href="https://www.rdocumentation.org/packages/metaMA/versions/3.1.2/topics/rowVars">rowVars()</a>.
 
+The ballgown object `bg` stores the fpkm values corresponding to genes.  Before calculating the fold changes in gene expression we can explore the expression of genes across the samples.  We will create a `gene_expression`variable holding the fpkm value of genes and then plot a boxplot of fpkm values from all the samples.
 
-<pre style="color: silver; background: black;">??ballgown::subset</pre>
-
-<pre>
-<strong style="color: blue;">subset ballgown objects to specific samples or genomic locations</strong>
-
-<strong style="color: grey;">Description</strong>
-
-<em style="color: green;">subset ballgown objects to specific samples or genomic locations</em>
-
-<strong style="color: grey;">Usage</strong>
-
-subset(x, ...)
-
-## S4 method for signature 'ballgown'
-subset(x, cond, genomesubset = TRUE)
-
-<strong style="color: grey;">Arguments</strong>
-
-x	
-a 		ballgown object
-...		further arguments to generic subset
-cond		Condition on which to subset. See details.
-genomesubset	if TRUE, subset x to a specific part of the genome. Otherwise, subset x to only include specific samples. TRUE by 
-		default.
-
-<strong style="color: grey;">Details</strong>
-
-To use subset, you must provide the cond argument as a string representing a logical expression specifying your desired subset. The subset expression can either involve column names of texpr(x, "all") (if genomesubset is TRUE) or of pData(x) (if genomesubset is FALSE). For example, if you wanted a ballgown object for only chromosome 22, you might call subset(x, "chr == 'chr22'"). (Be sure to handle quotes within character strings appropriately).</pre>
-
-<br>
+<pre style="color: silver; background: black;">gene_expression = gexpr(bg) #extract fpkm values of genes
+head(gene_expression)
+boxplot(log10(gene_expression+1),names=c("EE1","EE2","EE3","WT1","WT2","WT3"),col=c("red", "red","red","blue", "blue","blue"))
 </pre>
+The bocplot below gives an overview of expression of fpkm values of different genes across different samples. We have log transformed the values to visualise it better and added 1 `gene_expression+1` to avoid errors if the fpkm values are 0.
+<img src=fpkm_box_plot.png></a><br>
+
 
 To perform the differential expression analysis we use ballgown's "stattest" function. Let's have a look at it:
 <pre style="color: silver; background: black;">??ballgown::stattest</pre>
@@ -919,185 +892,127 @@ libadjust	library-size adjustment to use in linear models. By default, the adjus
 log		if TRUE, outcome variable in linear models is log(expression+1), otherwise it's expression. Default TRUE.
 </pre>
 
-We see we can determine which transcripts and genes are differentially expressed in the roots or shoots, alongside the fold changes of
-each differentially expressed gene as measured in FPKM with the following code:
+We see we can determine which transcripts and genes are differentially expressed between the conditions, alongside the fold changes ofeach differentially expressed gene as measured in FPKM with the following code:
 
-<pre style="color: silver; background: black;">results_transcripts = stattest(bg_filtered, feature="transcript" , covariate = "type" , 
+<pre style="color: silver; background: black;">results_transcripts = stattest(bg, feature="transcript" , covariate = "type" , 
 getFC = TRUE, meas = "FPKM")
 
-results_genes = stattest(bg_filtered, feature="gene" , covariate = "type" , getFC = TRUE, meas = "FPKM")</pre>
+results_genes = stattest(bg, feature="gene" , covariate = "type" , getFC = TRUE, meas = "FPKM")</pre>
 
 Let's take a look at this object:
 
 <pre style="color: silver; background: black;">head(results_genes)
-<strong>   feature        id        fc        pval      qval
-1    gene AT1G01050 0.8216286 0.038409878 0.9996177
-2    gene AT1G01060 1.2906809 0.825960521 0.9996177
-3    gene AT1G01080 0.8156244 0.276868361 0.9996177
-4    gene AT1G01090 1.0838842 0.009539157 0.9996177
-5    gene AT1G01100 0.9755726 0.687152148 0.9996177
-6    gene AT1G01110 0.9522035 0.706397431 0.9996177</strong></pre>
+<strong>   feature        id        fc       pval      qval
+1    gene AT1G01010 0.8087079 0.38793773 0.9981114
+2    gene AT1G01020 0.9421945 0.64827785 0.9981114
+3    gene AT1G01030 0.8025982 0.31221966 0.9981114
+4    gene AT1G01040 1.0508155 0.78611712 0.9981114
+5    gene AT1G01046 2.0228448 0.07153084 0.9981114
+6    gene AT1G01050 0.7928742 0.01064636 0.9981114</strong></pre>
 
-Each differentially expressed gene (or isoform) is listed, alongside its ID, fold-change (percent increase), <a href="https://en.wikipedia.org/wiki/P-value">p-value</a>, and <a href="http://www.statisticshowto.com/q-value/">q-value</a>.
-
-Now we want to order our results according to their p-value, and then subset to only take results with p-values below 0.01, writing our findings to a csv:
+The changes in expression in all genes is listed, alongside its ID, fold-change (percent increase), <a href="https://en.wikipedia.org/wiki/P-value">p-value</a>, and <a href="http://www.statisticshowto.com/q-value/">q-value</a>. It is a good idea to have foldchange (fc) log2 transformed as it is easy to understand the fold change values. A negative value will indicate downregulation and positive value as upregulation of genes between the conditions. 
 
 <pre style="color: silver; background: black;">
-results_genes = arrange(results_genes,pval)
-results_genes = subset(results_genes, pval < 0.01)
-results_transcripts = arrange(results_transcripts, pval)
-results_transcripts = subset(results_transcripts, pval < 0.01)
-write.csv(results_transcripts, "transcript_results.csv", row.names=FALSE)
-write.csv(results_genes, "results_genes.csv", row.names=FALSE)
+results_genes["log2fc"]<-log2(results_genes$fc)
+
+head(results_genes)
+
+  feature        id        fc       pval      qval      log2fc
+1    gene AT1G01010 0.8087079 0.38793773 0.9981114 -0.30630933
+2    gene AT1G01020 0.9421945 0.64827785 0.9981114 -0.08590316
+3    gene AT1G01030 0.8025982 0.31221966 0.9981114 -0.31725025
+4    gene AT1G01040 1.0508155 0.78611712 0.9981114  0.07150939
+5    gene AT1G01046 2.0228448 0.07153084 0.9981114  1.01638560
+6    gene AT1G01050 0.7928742 0.01064636 0.9981114 -0.33483603
+
+</pre>
+Now lets filter out differential expression result based on p-value and fold change. For this study we will consider genes with p<0.1 and showing more than 1.5 fold changes in expression. On log2 sacle this 0.584 `log2(1.5)=0.584`.  So any gene with p<0.1 and log2fc less than -0.584 and more than 0.584 are significant.  We will write this result to a `.csv` file for our records.
+
+<pre style="color: silver; background: black;">
+
+g_sign<-subset(results_genes,pval<0.1 & abs(logfc)>0.584)
+head(g_sign)
+    feature        id        fc       pval      qval     log2fc
+5      gene AT1G01046 2.0228448 0.07153084 0.9981114  1.0163856
+152    gene AT1G02360 0.6305038 0.08680302 0.9981114 -0.6654230
+171    gene AT1G02520 1.6764465 0.09136064 0.9981114  0.7454064
+205    gene AT1G02820 0.3489204 0.02106810 0.9981114 -1.5190299
+234    gene AT1G03070 1.5210633 0.09282004 0.9981114  0.6050802
+331    gene AT1G03935 0.5610848 0.03224290 0.9981114 -0.8337093
+
+
+&#35;&#35; Number of genes differentialy expressed.
+dim(g_sign)
+[1] 388   6
+
+write.csv(g_sign, "results_genes.csv", row.names=FALSE)
 
 &#35;&#35;we use row.names=FALSE because currently the row names are just the numbers 1, 2, 3. . .
 </pre>
 
-Now we want to visualize our data:
-We want to compare our genes based on their FPKM values. We know from reading ballgown's vignette that we can extract the 
-expression data using texpr() and specifying a measure. 
+So we have 388 genes which shows differential expression across our sample conditions.  
+
+AT this point we can perform principal component analysis of our dataset using the 388genes and this will address two points
+(1) Whats the degree of reproducibility across our biological replicates?
+(2) To what extent the 388 genes explains the variance in our sample condition?
+
+In order to achieve this we have to extract the fpkm values corresponding to the 388 genes from the `gene_expression` object holding fpkm values of all the detected genes.
 
 <pre style="color: silver; background: black;">
-fpkm = texpr(bg, meas = "FPKM")
-&#35;&#35;let's look at the distribution
-plot(density(fpkm[,1]),typr="l",main="Density Plot of \nUntransformed FPKM",col="blue")
-lines(density(fpkm[,2]),col="red")
-lines(density(fpkm[,3]),col="green")
-lines(density(fpkm[,4]),col="dodgerblue")
-lines(density(fpkm[,5]),col="pink")
-lines(density(fpkm[,6]),col="limegreen")
+&#35;&#35; Subset genes from gene_expression whose gene ID is present in g_sign
+sig_gene_fpkm=gene_expression[rownames(gene_expression) %in% g_sign$id,]
+
+&#35;&#35; Reassign column names
+colnames(sig_gene_fpkm)<-c("EE1","EE2","EE3","WT1","WT2","WT3")
+head(sig_gene_fpkm)
+                EE1        EE2        EE3      WT1      WT2      WT3
+AT1G01046  0.0000000  0.4551480  0.4800380 0.422412 2.445734 0.000000
+AT1G02360  1.3315690  0.4625370  0.8413550 0.150970 0.200799 0.238993
+AT1G02520  6.0268930  3.1223790  4.4537800 7.969385 8.486231 8.237259
+AT1G02820 18.0663470 10.2200270 14.4798820 4.727195 3.801382 6.377376
+AT1G03070  0.5091674  0.9138772  0.3889898 1.162226 1.441914 1.891146
+AT1G03935  5.1024750  6.5259790  6.2669260 3.841783 2.644548 2.658530
+
+dim(sig_gene_fpkm)
+[1] 388   6
+&#35;&#35; Our selected dataset has 388 genes same as that were in g_sign
 </pre>
-<img src="Rplot.png">
-We can see virtually nothing except that there are many, many genes that are lowly expressed. The reason for the sharp peak 
-is that the density plot automatically scales its x-axis from the lowest expressed to the highest expressed. Let's see what 
-those values are:
+
+Now the next set of commands is to compute PCA and plot it. We will generate 2 plots
+(1) Bargraph showing % of variance explained by each PC.
+(2) PCA plot itself using PC1 and PC2.
 
 <pre style="color: silver; background: black;">
-min(fpkm)
-<strong>0</strong>
-max(fpkm)
-<strong>13386.3</strong>
+&#35;&#35; Command below calculate all the PC of the data
+pc<-prcomp(t(sig_gene_fpkm),scale=TRUE)
+
+&#35;&#35; Here we are estimating the varaiance contributed by each component.
+pcpcnt<-round(100*pc$sdev^2/sum(pc$sdev^2),1)
+names(pcpcnt)<-c("PC1","PC2","PC3","PC4","PC5","PC6")
+barplot(pcpcnt,ylim=c(0,100))
+pcpcnt
+PC1  PC2  PC3  PC4  PC5  PC6 
+68.8 13.1  7.0  5.7  5.4  0.0 
 </pre>
-Due to the scaling, we cannot truly see the distribution. However, what we <i>can</i> do is to transform the data such that the variance is not so staggering, allowing us to see better. There are a few rules for this, all of the data must be transformed in a consistent and reversible manner, after transformation no data may have a negative value, and all data with a value of 0 must also be 0 after transformation. The reason for the second and third rules is more epistemological. For us, if a gene has an FPKM of 0, then for that sample the gene is unexpressed. Should we transform the data and that particular gene's FPKM is now above 0, we are fundamentally changing the nature of that sample -- i.e., we are now saying it is expresesing a gene it actually is not! Additionally, there is no such thing as negative expression, so there is no physical reality where we will have an FPKM beneath 0. With these three rules, we see that taking the log of all our data will prevent negative values, be consistent and reversible, and scale down our variance. However, log(0) =  Inf! We have broken a cardinal rule (oddly enough, the fact that it is  Infinity is not a rule-breaker, but rather that it is <b>negative</b>  Infinity! Seeing this, we can simply add 1 to our data before log transforming, log(0+1) = 0. Now we have fulfilled all three rules.
+Around 68.8% of the variance in the data can be explained by our geneset.  Which is pretty good.
 
+<img src="PC_variance_plot.png">
+
+
+
+Now the next set of codes below plots PCA plot.  Please donot get baffeled by the code. As you keep getting experienced with coding this all will start to make sense. :-)
 <pre style="color: silver; background: black;">
-fpkm = log2(fpkm + 1)
-head(fpkm)
-plot(density(fpkm[,1]),type="l",main="Density Comparison",col="red")
-lines(density(fpkm[,2]),col="blue")
-lines(density(fpkm[,3]),col="green")
-lines(density(fpkm[,4]),col="red")
-lines(density(fpkm[,5]),col="blue")
-lines(density(fpkm[,6]),col="green")</pre>
-
-We now we see an actual distribution. Let's see the difference in distribution between each individual part. To do this we are going to plot the density for each part, one by one, and watch for great changes.
-
-<img src=Rplot01.png></a><br>
-
-Now we will generate a <a href="http://setosa.io/ev/principal-component-analysis/">PCA</a> plot. I strongly advise you read the PCA link before continuing if you are not familiar with Principal Component Analysis. It will not be explained in this tutorial.
-
-Let's create a vector with our PCA point names
-<pre style="color: silver; background: black;">
-short_names = c("EE1","EE2","EE3","wt1","wt2","wt3")</pre>
-We are going to be using the <a href="https://en.wikipedia.org/wiki/Pearson_correlation_coefficient">Pearson coefficient</a> for our PCA plot. You may think of the Pearson coefficient simply as a measure of similarity. If two datasets are very similar, they will have a Pearson coefficient approaching 1 (every data compared to itself has a Pearson coefficient of 1). If two datasets are very dissimilar, they will have a Pearson coefficient approaching 0 Let's calculate a vector containing the correlation coefficient:
-
-<pre style="color: silver; background: black;">
-r = cor(fpkm, use="pairwise.complete.obs", method="pearson")</pre>
-Let's have a look at r:
-
-<pre style="color: silver; background: black;">
-r
-
-<strong style="color:blue;">                           FPKM.athaliana_EE_Rep1 FPKM.athaliana_EE_Rep2 FPKM.athaliana_EE_Rep3 FPKM.athaliana_wt_Rep1 FPKM.athaliana_wt_Rep2 FPKM.athaliana_wt_Rep3
-FPKM.athaliana_EE_Rep1                  1.0000000                  0.9689147                  0.9701448              0.9617423              0.9738848              0.9716859
-FPKM.athaliana_EE_Rep2                  0.9689147                  1.0000000                  0.9713023              0.9659690              0.9676161              0.9644472
-FPKM.athaliana_EE_Rep3                  0.9701448                  0.9713023                  1.0000000              0.9668139              0.9684712              0.9649888
-FPKM.athaliana_wt_Rep1                      0.9617423                  0.9659690                  0.9668139              1.0000000              0.9606613              0.9631253
-FPKM.athaliana_wt_Rep2                      0.9738848                  0.9676161                  0.9684712              0.9606613              1.0000000              0.9733014
-FPKM.athaliana_wt_Rep3                      0.9716859                  0.9644472                  0.9649888              0.9631253              0.9733014              1.0000000</strong>
-
-</pre>
-Here we see each member of the diagonal is 1.000000. Of course we knew this already, as each member is 100% similar to itself! Then we have the similarity measures of each sample to each other sample.
-
-Rather than calculate the similarity, it would be nicer to calculate the dissimilarity or distance between each sample. We know that if two samples are the same, their similarity measure is 1.000000. We also know that then their dissimilarity is 0%, or 0.000000. Here we see that if we subtract each element from 1, we get the dissimilarity matrix! Let's do it:
-
-<pre style="color: silver; background: black;">
-d = 1 - r
-d
-<strong style="color:blue;">
-                           FPKM.athaliana_EE_Rep1 FPKM.athaliana_EE_Rep2 FPKM.athaliana_EE_Rep3 FPKM.athaliana_wt_Rep1 FPKM.athaliana_wt_Rep2 FPKM.athaliana_wt_Rep3
-FPKM.athaliana_EE_Rep1                 0.00000000                 0.03108533                 0.02985520             0.03825768             0.02611516             0.02831408
-FPKM.athaliana_EE_Rep2                 0.03108533                 0.00000000                 0.02869768             0.03403101             0.03238395             0.03555277
-FPKM.athaliana_EE_Rep3                 0.02985520                 0.02869768                 0.00000000             0.03318614             0.03152878             0.03501125
-FPKM.athaliana_wt_Rep1                     0.03825768                 0.03403101                 0.03318614             0.00000000             0.03933872             0.03687471
-FPKM.athaliana_wt_Rep2                     0.02611516                 0.03238395                 0.03152878             0.03933872             0.00000000             0.02669858
-FPKM.athaliana_wt_Rep3                     0.02831408                 0.03555277                 0.03501125             0.03687471             0.02669858             0.00000000</strong>
-</pre>
-R has a function which will perform the principal component analysis for us when provided with a dissimilarity matrix, cmdscale. Let's have a look at it:
-
-<pre style="color: silver; background: black;">
-help(cmdscale)</pre>
-
-<pre style="color: silver; background: black;"><strong>Classical (Metric) Multidimensional Scaling</strong>
-
-<strong style="color: grey;">Description</strong>
-
-<em style="color: green;">Classical multidimensional scaling (MDS) of a data matrix. Also known as principal coordinates analysis (Gower, 1966).</em>
-
-<strong style="color: grey;">Usage</strong>
-
-cmdscale(d, k = 2, eig = FALSE, add = FALSE, x.ret = FALSE,
-         list. = eig || add || x.ret)
-<strong style=color: green;">Arguments</strong>
-
-d	a distance structure such as that returned by dist or a full symmetric matrix containing the dissimilarities.
-k	the maximum dimension of the space which the data are to be represented in; must be in {1, 2, …, n-1}.
-eig	indicates whether eigenvalues should be returned.
-add	logical indicating if an additive constant c* should be computed, and added to the non-diagonal dissimilarities such that the 
-	modified dissimilarities are Euclidean.
-x.ret	indicates whether the doubly centred symmetric distance matrix should be returned.
-list.	logical indicating if a list should be returned or just the n * k matrix, see ‘Value:’.
-
-<strong style="color:grey;">Details</strong>
-
-Multidimensional scaling takes a set of dissimilarities and returns a set of points such that the distances between the points are approximately equal to the dissimilarities. (It is a major part of what ecologists call ‘ordination’.)
-
-A set of Euclidean distances on n points can be represented exactly in at most n - 1 dimensions. cmdscale follows the analysis of Mardia (1978), and returns the best-fitting k-dimensional representation, where k may be less than the argument k.
-
-The representation is only determined up to location (cmdscale takes the column means of the configuration to be at the origin), rotations and reflections. The configuration returned is given in principal-component axes, so the reflection chosen may differ between R platforms (see prcomp).
-
-When add = TRUE, a minimal additive constant c* is computed such that the dissimilarities d[i,j] + c* are Euclidean and hence can be represented in n - 1 dimensions. Whereas S (Becker et al, 1988) computes this constant using an approximation suggested by Torgerson, R uses the analytical solution of Cailliez (1983), see also Cox and Cox (2001). Note that because of numerical errors the computed eigenvalues need not all be non-negative, and even theoretically the representation could be in fewer than n - 1 dimensions.</pre>
-
-Let's perform our principal component analysis:
-
-<pre style="color: silver; background: black;">pca = cmdscale(d, k=2)</pre>
-We expect pca to have four rows, each row corresponding to a sample, and two columns, the first column representing our first coordinate axis and the second dimension representing our second coordinate axis. If we plot the first column against the second column, the distances between points is the dissimilarity between points.
-
-<pre style="color: silver; background: black;">
-pca
-
-<strong style="color:blue;">                                   [,1]          [,2]
-FPKM.athaliana_EE_Rep1  0.010188699  0.0037862309
-FPKM.athaliana_EE_Rep2 -0.007391951  0.0125768089
-FPKM.athaliana_EE_Rep3 -0.006736291  0.0104882107
-FPKM.athaliana_wt_Rep1     -0.021280708 -0.0133394678
-FPKM.athaliana_wt_Rep2      0.013442569  0.0001839026
-FPKM.athaliana_wt_Rep3      0.011777681 -0.0136956852</strong>
-
-</pre>
-For this next step it is assumed that you are familiar with plotting in R. If not you may look <a href="https://bio Informatics.uconn.edu/introduction-to-r/">here</a>.
-
-<pre style="color: silver; background: black;">
-plot.new()
-par(mfrow=c(1,1))
-##point colors
 point_colors = c("red", "red","red","blue", "blue", "blue")
-plot(pca[,1],pca[,2], xlab="", ylab="", main="PCA plot for all libraries", xlim=c(-0.025,0.02), ylim=c(-0.05,0.05),col=point_colors)
-text(pca[,1],pca[,2],pos=2,short_names, col=c("red", "red","red","blue", "blue", "blue"))</pre>
+plot(pc$x[,1],pc$x[,2], xlab="", ylab="", main="PCA plot for all libraries",xlim=c(min(pc$x[,1])-2,max(pc$x[,1])+2),ylim=c(min(pc$x[,2])-2,max(pc$x[,2])+2),col=point_colors)
+text(pc$x[,1],pc$x[,2],pos=2,rownames(pc$x), col=c("red", "red","red","blue", "blue", "blue"))
+
+</pre>
+
+As you can see that the PC1 component which explains around 70% variance in the dataset seprates the samples based on the conditions, i.e. WT and ectopic expression samples.  This is another terms explain that the major cause of variance in our samples is the conditions associated with the samples.
 <img src="pcaplot_for_all_libraries.png">
 
 
-We should take advantage while we have this results_genes object and annotate the genes we have deemed significant (p-values below 0.01, every gene now in this object). To annotate the genes we will be using <a href="https://www.bioconductor.org/packages/devel/bioc/html/biomaRt.html">biomaRt</a> and biomartr. You can install these with the following code:
+We should take advantage while we have this results_genes object and annotate the genes we have deemed significant (p-values below 0.1, every gene now in this object). To annotate the genes we will be using <a href="https://www.bioconductor.org/packages/devel/bioc/html/biomaRt.html">biomaRt</a> and biomartr. You can install these with the following code:
 <pre style="color: silver; background: black;">
 ## try http:// if https:// URLs are not supported
 source("https://bioconductor.org/biocLite.R")
