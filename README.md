@@ -918,7 +918,7 @@ head(results_genes)
 6    gene AT1G01050 0.7928742 0.01064636 0.9981114 -0.33483603
 
 </pre>
-Now lets filter out differential expression result based on p-value and fold change. For this study we will consider genes with p<0.1 and showing more than 1.5 fold changes in expression. On log2 sacle this 0.584 `log2(1.5)=0.584`.  So any gene with p<0.1 and log2fc less than -0.584 and more than 0.584 are significant.  We will write this result to a `.csv` file for our records.
+Now lets filter differential expression result based on p-value and fold change. For this study we will consider genes with p<0.1 and showing more than 1.5 fold changes in expression as gene of interest to us. On log2 scale this is 0.584 `log2(1.5)=0.584`.  So any gene with p<0.1 and log2fc less than -0.584 and more than 0.584 are significant.  We will write this result to a `.csv` file for our records.
 
 <pre style="color: silver; background: black;">
 
@@ -992,7 +992,7 @@ Around 68.8% of the variance in the data can be explained by our geneset.  Which
 
 
 
-Now the next set of codes below plots PCA plot.  Please donot get baffeled by the code. As you keep getting experienced with coding this all will start to make sense. :-)
+Now the next set of codes below plots a PCA plot.  Please donot get baffeled by the code. As you keep getting experienced with coding this all will start to make sense. :-)
 <pre style="color: silver; background: black;">
 point_colors = c("red", "red","red","blue", "blue", "blue")
 plot(pc$x[,1],pc$x[,2], xlab="", ylab="", main="PCA plot for all libraries",xlim=c(min(pc$x[,1])-2,max(pc$x[,1])+2),ylim=c(min(pc$x[,2])-2,max(pc$x[,2])+2),col=point_colors)
@@ -1000,7 +1000,7 @@ text(pc$x[,1],pc$x[,2],pos=2,rownames(pc$x), col=c("red", "red","red","blue", "b
 
 </pre>
 
-As you can see that the PC1 component which explains around 70% variance in the dataset seprates the samples based on the conditions, i.e. WT and ectopic expression samples.  This is another terms explain that the major cause of variance in our samples is the conditions associated with the samples.
+As wecan see that the PC1 explains around 70% variance and also seperates the samples based on the conditions, i.e. WT and ectopic expression samples (Visualise dropping samples on x-axis).  This means that 70% of the variance in the samples can be explained by the sample conditions.
 <img src="PCAplot_for_all_libraries.png" >
 
 <h2 id="Seventh_Point_Header">Gene annotation with BiomaRt</h2>
