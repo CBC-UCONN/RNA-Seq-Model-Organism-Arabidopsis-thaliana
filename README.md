@@ -674,11 +674,11 @@ The covrage, FPKM, TPM and other information on the transcripts are available in
 ```
 This is our new refernce GTF file we will be using to quantif the xpression of dfferent genes and transcripts.  If you have a closer look we can see that this file do not contain any of the coverage, TPM and FPKM information.  Thats how we want it as it is going to serve refernce in sunsequent analysis.  Also note that the first two transcripts have know ENSEMBL `transcrip-id`,`gene_name` and `ref_gene_id`, however they are missing in transcript 3.  This is because that represents a novel transcript identified in the study.  Since we have created a master refernce gTF file `stringtie_merged.gtf` lets go ahead and detemine the expression of features in the samples.
 
-Before we go ahead lets have look at the GFF compare stats.  The file we are looking for is `gffcompare.stats`, and the contents are self explanatory.
+Before we go ahead lets have look at the GFF compare stats.  The file we are looking for is `gffcompare.stats`, and the contents are self explanatory. One can explore other files `gffcompare.annotated.gtf`,`gffcompare.loci`,`gffcompare.stats`,`gffcompare.stringtie_merged.gtf.refmap`,`gffcompare.stringtie_merged.gtf.tmap`,`gffcompare.tracking` of the comparison to have a deeper understanding of the differences.
 ```less gffcompare.stats
 
 # gffcompare v0.10.4 | Command line was:
-#gffcompare -r /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o gffcompare stringtie_merged.gtf .  One can explore other files `gffcompare.annotated.gtf`,`gffcompare.loci`,`gffcompare.stats`,`gffcompare.stringtie_merged.gtf.refmap`,`gffcompare.stringtie_merged.gtf.tmap`,`gffcompare.tracking` of the comparison to have a deeper understanding of the differences.
+#gffcompare -r /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o gffcompare stringtie_merged.gtf .  
 #
 
 #= Summary for dataset: stringtie_merged.gtf
