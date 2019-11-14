@@ -713,8 +713,10 @@ Now lets go ahead and do the transcript quantification using stringtie.
 
 
 <h2 id="Fifth_Point_Header">Transcript quantification with StringTie</h2>
+
 In this step we will use the `stringtie_merged.gtf` file as reference and measure the expression of exons, transcripts and other features present in the gtf file.  The command we will be executing will be,
 `stringtie -e -B -p 4 sample.bam -G stringtie_merged.gtf -o output.count -A gene_abundance.out`
+
 -B returns a Ballgown input table file
 -e only estimate the abundance of given reference transcripts
 -o output path/file name
