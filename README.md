@@ -1290,7 +1290,7 @@ Once the genes with differential expression is loaded, select the "Style tab and
 This will highlight the nodes based on the value of fc for protein present in differentially expressed genes and in the network list.<img src="cytoscape_a9.png">
 
 
-<h2 id="ninth_Point_Header">Conclusion</h2>
+<h2 id="Tenth_Point_Header">Conclusion</h2>
 You may find yourself wondering exactly what it is that we acccomplished by the end of this analysis. First, to recap we:
 
 <pre style="color: silver; background: black;">Downloaded experimental data
