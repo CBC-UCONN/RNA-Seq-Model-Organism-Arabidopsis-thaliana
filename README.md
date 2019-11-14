@@ -15,20 +15,20 @@ This repository is a usable, publicly available tutorial for analyzing different
 <li><a href="#Sixth_Point_Header">6 Transcript quantification with StringTie</a></li>
 <li><a href="#Seventh_Point_Header">7 Differential expression analysis using ballgown</a></li>
 <li><a href="#Eighth_Point_Header">8 Gene annotation with BiomaRt</a></li>
-<li><a href="#Eighth_Point_Header">9 Topological networking using cytoscape</a></li>
+<li><a href="#Ninth_Point_Header">9 Topological networking using cytoscape</a></li>
 <li><a href="#Tenth_Point_Header">10 Conclusion</a></li>
 </ul>
 </div>
 
 <h2 id="First_Point_Header">Introduction and programs</h2>
 
-Arabidopsis thaliana is a small flowering plant that is used as a model system in world of plant biology. It helped researchers to build understanding around molecular, biochemical and genetics processes in the plants.  A wealth of knowledge is available around arabidopsis genomics (genome sequence, transcriptome, genetic markers etc) and hence serve as ideal system to develop fundamental understanding around plant RNA-seq analysis before venturing in the transcriptomics world of non moodel species. In this tutorial we will be using RNAseq dataset from the flower buds of A. thaliana and the study was published in "Frontiers in Plant Science" (https://www.frontiersin.org/articles/10.3389/fpls.2019.00763/full).  This study was aimed at understanding the functional role of Monoacylglycerol lipase (MAGL) hydrolyzes known to produce free fatty acid and glycerol and is well studied in animal kingdom but a little is known about its function in plants. The study involves ectopic expression (EE) of BnaC.MAGL8.a in Arabidopsis to explore its potential biological function. They observed that this ectopic expression causes male sterility by affecting the devlopment of pollens.  To develop their molecular understanding around the process they carried out RNAseq studies in the flower buds.  Total 6 RNAseq datasets representing 3 biological replicates each for WT and BnaC.MAGL8.a were used in this study The RNA profiles are archived in the SRA, and meta Information on each may be viewed through the SRA ID: SRR8428904, SRR8428905, SRR8428906, SRR8428907, SRR8428908, SRR8428909(https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP178230).
+*Arabidopsis thaliana* is a small flowering plant that is used as a model system in research of plant biology. It helped researchers to build basic understanding around molecular, biochemical and genetics processes in the plants.  A wealth of knowledge and information is available around Arabidopsis genomics (genome sequence, transcriptome, genetic markers etc) and hence could be used as ideal system to develop fundamental understanding plant RNA-seq analysis before venturing in the transcriptomics world of non moodel species. In this tutorial we will be using RNAseq dataset from the flower buds of A. thaliana and the study was published in "Frontiers in Plant Science" (https://www.frontiersin.org/articles/10.3389/fpls.2019.00763/full).  This study was aimed at understanding the functional role of Monoacylglycerol lipase (MAGL) hydrolyzes known to produce free fatty acid and glycerol. The enzyme is well studied in animal kingdom but a little is known about its function in plants. This study involves ectopic expression (EE) of BnaC.MAGL8.a in Arabidopsis to explore its potential biological function. They observed that this ectopic expression causes male sterility by affecting the devlopment of pollens.  To develop their molecular understanding around the process they carried out RNAseq studies in the flower buds.  Total 6 RNAseq datasets representing 3 biological replicates each for WT and BnaC.MAGL8.a were used in this study The RNA profiles are archived in the SRA, and meta Information on each may be viewed through the SRA ID: SRR8428904, SRR8428905, SRR8428906, SRR8428907, SRR8428908, SRR8428909(https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP178230).
 
 The Single Read Archive, or SRA, is a publicly available database containing read sequences from a variety of experiments. Scientists who would like their read sequences present on the SRA submit a report containing the read sequences, experimental details, and any other accessory meta-data.
 
-Our data, SRR8428904, SRR8428905, SRR8428906, SRR8428907, SRR8428908, SRR8428909 come from EE1, EE2, EE3, WT1, WT2, and WT3 respectively. Our objective in this analysis is to determine which genes are expressed in all samples, quantify the expression of each common gene in each sample, identify genes which are lowly expressed in  WT1, WT2 and WT3 but highly expressed in  EE1, EE2 and EE3 or vice versa, quantify the relative expression of such genes, and lastly to create a visual topological network of genes with similar expression profiles.
+Our data, SRR8428904, SRR8428905, SRR8428906, SRR8428907, SRR8428908, SRR8428909 come from EE1, EE2, EE3, WT1, WT2, and WT3 respectively. Our objective in this analysis is to determine which genes are expressed in all samples, quantify the expression of each common gene in each sample, identify genes which are differentially expressed between  WT1, WT2 and WT3  EE1, EE2 and EE3, quantify the relative expression of such genes, and lastly to create a visual topological network of genes with similar expression profiles.
 
-You may connect to Xanadu via SSH, which will place you in your home directory
+You may connect to Xanadu via SSH, which will direct you in your home directory
 
 <pre style="color: silver; background: black;">-bash-4.2$ cd /home/CAM/$USER</pre> 
 
@@ -48,7 +48,7 @@ RNA-Seq-Model-Organism-Arabidopsis-thaliana
 └── ballgown
 ```
 
-In this tutorial each major section is diveded in to folders so you can follow it easily. As you go you can navigate to each folder, as each section directs you to, and follow the instructions. 
+The tutorial is divided in sections so you can follow it easily. 
 
 
 <h2 id="Second_Point_Header">Accessing the data using sra-toolkit </h2>
@@ -72,7 +72,7 @@ Use option --help for more  Information
 fastq-dump : 2.8.2 
 ```
 
-For our needs, we will simply be using the accession numbers to dump our experimental data into our directory. We know our accession numbers, so let's write a shell script to retrieve our raw reads. There are a variety of text editors available on Xanadu. My preferred text editor is "nano". Therefore, we will be using nano to write our shell script.
+For our needs, we will simply be using the accession numbers to download our experimental data into our directory. We know our accession numbers, so let's write a shell script to retrieve our raw reads. There are a variety of text editors available on Xanadu. My preferred text editor is "nano". Therefore, we will be using nano to write our shell script.
 
 ``` 
 nano data_dump.sh
@@ -575,13 +575,14 @@ samtools sort -@ 8 EE_Rep3.bam -o EE_Rep3_sort.bam
 The full slurm script [sam_sort_bam.sh ](/mapping/sam_sort_bam.sh) can be found in **mapping/** directory.  
 
 <pre style="color: silver; background: black;">bash-4.2$ sbatch sam_sort_bam.sh</pre>
-<h2 id="Fifth_Point_Header">Reference Guided Transcript Assembly</h2>
-String tie can be executed in 3 different modes
-1. Exclusively reference guided
-2. Reference guided transcript discovery mode
-3. De-novo mode
 
-We will be running stringtie using the option 2 that includes step 7, 8 and 9.  In the first step stringtie is used with sample bam file and  refernce gtf file to generate a gtf file corresponding to the sample.  This gtf file have information on expression levels of transcripts, exons and other features along with any novel transcripts.
+<h2 id="Fifth_Point_Header">Reference Guided Transcript Assembly</h2>
+**Stringtie** is a fast and highly efficient assembler of RNA-Seq alignments into potential transcripts. It can be executed in 3 different modes
+1. Exclusively reference guided :  In this mode stringtie quantify the expression of known transcripts only.
+2. Reference guided transcript discovery mode : Quantify known transcripts and detect novel ones.
+3. De-novo mode : Detect and assemble transcripts.
+
+We will be running stringtie using the option 2 that includes step 7, 8 and 9 of the workflow.  In the first step of this process stringtie along with sample bam file and  refernce gtf file generate a gtf file corresponding to the sample.  This gtf file have information on expression levels of transcripts, exons and other features along with any novel transcripts. The syntax of the command is
 
 `stringtie -p 4 -l label -G Reference.gtf -o sample.gtf sample.bam`
 In this command
@@ -590,23 +591,23 @@ In this command
 -G Reference GTF available from public domain databases
 -o output gtf corresponding to expression levels of features of the sample
 
-Once we have ran this command through all our six samples (WT1, WT2, WT3, EE1,EE2 and EE3) we will have 6 gtf files corresponding to each sample with feature expression values. At this stage having 6 different gtf files is of no advantage as each may contain same novel transcript but labelled differently.  Ideally we would like to merge these 6 gtf files along with the reference GTF to achieve following goals
+Once we have ran this command through all our six samples (WT1, WT2, WT3, EE1,EE2 and EE3) we will have 6 gtf files each corresponding to one of the sample containng feature expression values. Having 6 different gtf files is of no advantage as each may contain same novel transcript but labelled differently.  Ideally we would like to merge these 6 gtf files along with the reference GTF to achieve following goals
 - Redundant transcripts across the samples should be represented once
-- Known transcripts should hold their stable gene ID's assigned in Ensembl
+- Known transcripts should hold their stable gene ID's (assigned in Ensembl)
 - Novel transcripts present across multiple samples with different names should be represented once.
 
-The command we will use to achieve this is `stringtie --merge` and the command will be
+The command we will use to achieve this is `stringtie --merge` and the syntax is
 `stringtie --merge -p 4 -o stringtie_merged.gtf -G Reference.gtf listOfSampleGTFs.txt`
 
 -p specifies the number of threads to use
 -G Reference GTF available from public domain databases
 -o output merged gtf file
-listOfSampleGTFs.txt : This is a text file witn list of gtfs generated for the samples in previous step.
+listOfSampleGTFs.txt : This is a text file with list of gtfs generated freom the samples in previous step.
 
 `ls -1 ath*/*.gtf >> sample_assembly_gtf_list.txt`
 
-The command above is to generate `listOfSampleGTFs.txt` used in the `stringtie --merge` command.
-Once we have generated our merged GTF we can compare it with Reference GTF to get some stats on the stringtie_merged.gtf. So for our samples, all the above steps can be written in a script as shown below
+The command above is to generate `listOfSampleGTFs.txt` that will be used in `stringtie --merge` command.
+The merged GTF can be compared with Reference GTF to get some stats on the stringtie_merged.gtf. The above set of commands can be put together in a script as shown below,
 
 ``` nano stringtie_gtf.sh
 #!/bin/bash
@@ -643,8 +644,8 @@ module load gffcompare/0.10.4
 
 gffcompare -r /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o gffcompare stringtie_merged.gtf
 ```
-If we open any of the sample GTF files we can see the contents
-```less 
+Now lets examine the outputs generated from this script.  As discussed above in first step stringtie genrates a gtf file for each sample with details of covrage, FPKM, TPM and other information on the transcripts based on sample bam file.
+```less transcripts.gtf
 # StringTie version 2.0.3
 1       StringTie       transcript      3631    5899    1000    +       .       gene_id "EE1.1"; transcript_id "EE1.1.1"; reference_id "AT1G01010.1"; ref_gene_id "AT1G01010"; ref_gene_name "AT1G01010"; cov "2.338863"; FPKM "1.194506"; TPM "1.609814";
 1       StringTie       exon    3631    3913    1000    +       .       gene_id "EE1.1"; transcript_id "EE1.1.1"; exon_number "1"; reference_id "AT1G01010.1"; ref_gene_id "AT1G01010"; ref_gene_name "AT1G01010"; cov "3.505300";
@@ -652,7 +653,8 @@ If we open any of the sample GTF files we can see the contents
 1       StringTie       exon    4486    4605    1000    +       .       gene_id "EE1.1"; transcript_id "EE1.1.1"; exon_number "3"; reference_id "AT1G01010.1"; ref_gene_id "AT1G01010"; ref_gene_name "AT1G01010"; cov "0.866667";
 1       StringTie       exon    4706    5095    1000    +       .       gene_id "EE1.1"; transcript_id "EE1.1.1"; exon_number "4"; reference_id "AT1G01010.1"; ref_gene_id "AT1G01010"; ref_gene_name "AT1G01010"; cov "2.884615";
 ```
-The covrage, FPKM, TPM and other information on the transcripts are available in the GTF file. Press `Q` to come out of the display. Now lets have a look at out merged GTF file `stringtie_merged.gtf
+. Press `Q` to come out of the display. 
+Now lets have a look at out merged GTF file `stringtie_merged.gtf
 ` from the previous script/
 
 ```less stringtie_merged.gtf
@@ -673,7 +675,7 @@ The covrage, FPKM, TPM and other information on the transcripts are available in
 1       StringTie       exon    12424   13173   1000    -       .       gene_id "MSTRG.2"; transcript_id "MSTRG.2.2"; exon_number "2";
 1       StringTie       exon    13335   13714   1000    -       .       gene_id "MSTRG.2"; transcript_id "MSTRG.2.2"; exon_number "3";
 ```
-This is our new refernce GTF file we will be using to quantif the xpression of dfferent genes and transcripts.  If you have a closer look we can see that this file do not contain any of the coverage, TPM and FPKM information.  Thats how we want it as it is going to serve refernce in sunsequent analysis.  Also note that the first two transcripts have know ENSEMBL `transcrip-id`,`gene_name` and `ref_gene_id`, however they are missing in transcript 3.  This is because that represents a novel transcript identified in the study.  Since we have created a master refernce gTF file `stringtie_merged.gtf` lets go ahead and detemine the expression of features in the samples.
+This is our new refernce GTF file we will be using to quantify the expression of dfferent genes and transcripts.  If we look closer we can see that the file have information different features but exclude coverage, TPM and FPKM information.  Thats how we want it to be for use as refernce in sunsequent analysis.  Also note that the first two transcripts have known ENSEMBL `transcrip-id`,`gene_name` and `ref_gene_id`, however it is missing in transcript 3.  This is because it represents a novel transcript identified in the study.  
 
 Before we go ahead lets have look at the GFF compare stats.  The file we are looking for is `gffcompare.stats`, and the contents are self explanatory. One can explore other files `gffcompare.annotated.gtf`,`gffcompare.loci`,`gffcompare.stats`,`gffcompare.stringtie_merged.gtf.refmap`,`gffcompare.stringtie_merged.gtf.tmap`,`gffcompare.tracking` of the comparison to have a deeper understanding of the differences.
 ```less gffcompare.stats
@@ -713,9 +715,9 @@ Intron chain level:   100.0     |    79.2    |
 Now lets go ahead and do the transcript quantification using stringtie.
 
 
-<h2 id="Fifth_Point_Header">Transcript quantification with StringTie</h2>
+<h2 id="Sixth_Point_Header">Transcript quantification with StringTie</h2>
 
-In this step we will use the `stringtie_merged.gtf` file as reference and measure the expression of exons, transcripts and other features present in the gtf file.  The command we will be executing will be,
+In this step we will use the `stringtie_merged.gtf` file as reference and measure the expression of exons, transcripts and other features present in the gtf file.  The syntax of command we will be executing is,
 `stringtie -e -B -p 4 sample.bam -G stringtie_merged.gtf -o output.count -A gene_abundance.out`
 
 -B returns a Ballgown input table file
@@ -818,7 +820,7 @@ Let's have a look at the stringtie output .counts file which we will be using in
 
 <br>
 
-<h2 id="Sixth_Point_Header">Differential expression analysis using ballgown</h2>
+<h2 id="Seventh_Point_Header">Differential expression analysis using ballgown</h2>
 For many organisms, many of the same genes are expressed in separate cell types, with a variety of phenotype differences a result of the specific isoforms a cell will use. Therefore, when performing a differential expression analysis from different parts of one organism (not one species, but a singular organism), it is wise to perform an isoform expression analysis alongside a standard differential expression analysis and combine the results (as we are doing here). We will only be performing the isoform expresion analysis. <a href="https://bioconductor.org/packages/release/bioc/html/ballgown.html">Ballgown</a> is a differential expression package for R via Bioconductor ideal for isoform expression analyses. Before beginning, you need to secure copy our ballgown directory from Xanadu to your local machine:
 
 <pre style="color: silver; background: black;">-bash-4.2$ exit
@@ -932,7 +934,7 @@ The ballgown object `bg` stores the fpkm values corresponding to genes.  Before 
 head(gene_expression)
 boxplot(log10(gene_expression+1),names=c("EE1","EE2","EE3","WT1","WT2","WT3"),col=c("red", "red","red","blue", "blue","blue"))
 </pre>
-The boxplot below gives an overview of expression of fpkm values of different genes across different samples. We have log transformed the values to visualise it better and added 1 `gene_expression+1` to avoid errors if the fpkm values are 0.
+The boxplot below gives an overview of expression of fpkm values of different genes across different samples. We have log10 transformed the values to visualise it better and added 1 `gene_expression+1` to avoid errors if the fpkm values are 0.
 
 <img src="fpkm_box_plot.png"> </a><br>
 
@@ -1083,7 +1085,7 @@ pcpcnt
 PC1  PC2  PC3  PC4  PC5  PC6 
 68.8 13.1  7.0  5.7  5.4  0.0 
 </pre>
-Around 68.8% of the variance in the data can be explained by our geneset.  Which is pretty good.
+Around 68.8% of the variance in the data can be explained by genes in our geneset.  Which is pretty good.
 
 <img src="PC_variance_plot.png" >
 
@@ -1100,7 +1102,7 @@ text(pc$x[,1],pc$x[,2],pos=2,rownames(pc$x), col=c("red", "red","red","blue", "b
 As wecan see that the PC1 explains around 70% variance and also seperates the samples based on the conditions, i.e. WT and ectopic expression samples (Visualise dropping samples on x-axis).  This means that 70% of the variance in the samples can be explained by the sample conditions.
 <img src="PCAplot_for_all_libraries.png" >
 
-<h2 id="Seventh_Point_Header">Gene annotation with BiomaRt</h2>
+<h2 id="Eighth_Point_Header">Gene annotation with BiomaRt</h2>
 
 In this section we will aim to perform a functional annotation of differentially expressed genes identified in our analysis.  These genes are stored in `g_sign` object and we will use  `biomart` tool available on public databases to extract information using a R packages.  The functionalities demonstrated below are applicable to most public domain databases provided they support Biomart. Before getting into `R studio` lets understand few key features of Ensembl database, the one we will be using for our annotation. It is important to develop an understanding about databases as this will help in extracting data from correct database.  Ensembl has 6 different sub domains
 1. Bacteria	:  bacteria.ensembl.org
@@ -1270,7 +1272,7 @@ write.csv(file="annotated_genes.csv",annotated_genes,row.names=F)</pre>
 
 </pre>
 
-<h2 id="Eighth_Point_Header">Topological networking using cytoscape</h2>
+<h2 id="Ninth_Point_Header">Topological networking using cytoscape</h2>
 
 <a href="https://github.com/miriamposner/cytoscape_tutorials">Cytoscape</a> is a desktop program which creates visual topological networks of data. To visualise our differentially regulated genes in a network on cytoscape we will follow the following steps
 
