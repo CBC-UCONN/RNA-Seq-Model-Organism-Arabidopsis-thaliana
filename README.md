@@ -574,6 +574,7 @@ samtools sort -@ 8 EE_Rep3.bam -o EE_Rep3_sort.bam
 The full slurm script [sam_sort_bam.sh ](/mapping/sam_sort_bam.sh) can be found in **mapping/** directory.  
 
 <pre style="color: silver; background: black;">bash-4.2$ sbatch sam_sort_bam.sh</pre>
+
 <h2 id="Fifth_Point_Header">Reference Guided Transcript Assembly</h2>
 String tie can be executed in 3 different modes
 1. Exclusively reference guided
@@ -712,7 +713,7 @@ Intron chain level:   100.0     |    79.2    |
 Now lets go ahead and do the transcript quantification using stringtie.
 
 
-<h2 id="Fifth_Point_Header">Transcript quantification with StringTie</h2>
+<h2 id="Sixth_Point_Header">Transcript quantification with StringTie</h2>
 
 In this step we will use the `stringtie_merged.gtf` file as reference and measure the expression of exons, transcripts and other features present in the gtf file.  The command we will be executing will be,
 `stringtie -e -B -p 4 sample.bam -G stringtie_merged.gtf -o output.count -A gene_abundance.out`
@@ -817,7 +818,7 @@ Let's have a look at the stringtie output .counts file which we will be using in
 
 <br>
 
-<h2 id="Sixth_Point_Header">Differential expression analysis using ballgown</h2>
+<h2 id="Seventh_Point_Header">Differential expression analysis using ballgown</h2>
 For many organisms, many of the same genes are expressed in separate cell types, with a variety of phenotype differences a result of the specific isoforms a cell will use. Therefore, when performing a differential expression analysis from different parts of one organism (not one species, but a singular organism), it is wise to perform an isoform expression analysis alongside a standard differential expression analysis and combine the results (as we are doing here). We will only be performing the isoform expresion analysis. <a href="https://bioconductor.org/packages/release/bioc/html/ballgown.html">Ballgown</a> is a differential expression package for R via Bioconductor ideal for isoform expression analyses. Before beginning, you need to secure copy our ballgown directory from Xanadu to your local machine:
 
 <pre style="color: silver; background: black;">-bash-4.2$ exit
@@ -1099,7 +1100,7 @@ text(pc$x[,1],pc$x[,2],pos=2,rownames(pc$x), col=c("red", "red","red","blue", "b
 As wecan see that the PC1 explains around 70% variance and also seperates the samples based on the conditions, i.e. WT and ectopic expression samples (Visualise dropping samples on x-axis).  This means that 70% of the variance in the samples can be explained by the sample conditions.
 <img src="PCAplot_for_all_libraries.png" >
 
-<h2 id="Seventh_Point_Header">Gene annotation with BiomaRt</h2>
+<h2 id="Eighth_Point_Header">Gene annotation with BiomaRt</h2>
 
 In this section we will aim to perform a functional annotation of differentially expressed genes identified in our analysis.  These genes are stored in `g_sign` object and we will use  `biomart` tool available on public databases to extract information using a R packages.  The functionalities demonstrated below are applicable to most public domain databases provided they support Biomart. Before getting into `R studio` lets understand few key features of Ensembl database, the one we will be using for our annotation. It is important to develop an understanding about databases as this will help in extracting data from correct database.  Ensembl has 6 different sub domains
 1. Bacteria	:  bacteria.ensembl.org
@@ -1269,7 +1270,7 @@ write.csv(file="annotated_genes.csv",annotated_genes,row.names=F)</pre>
 
 </pre>
 
-<h2 id="Eighth_Point_Header">Topological networking using cytoscape</h2>
+<h2 id="Ninth_Point_Header">Topological networking using cytoscape</h2>
 
 <a href="https://github.com/miriamposner/cytoscape_tutorials">Cytoscape</a> is a desktop program which creates visual topological networks of data. To visualise our differentially regulated genes in a network on cytoscape we will follow the following steps
 
@@ -1289,7 +1290,7 @@ Once the genes with differential expression is loaded, select the "Style tab and
 This will highlight the nodes based on the value of fc for protein present in differentially expressed genes and in the network list.<img src="cytoscape_a9.png">
 
 
-<h2 id="ninth_Point_Header">Conclusion</h2>
+<h2 id="Tenth_Point_Header">Conclusion</h2>
 You may find yourself wondering exactly what it is that we acccomplished by the end of this analysis. First, to recap we:
 
 <pre style="color: silver; background: black;">Downloaded experimental data
