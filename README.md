@@ -574,6 +574,143 @@ samtools sort -@ 8 EE_Rep3.bam -o EE_Rep3_sort.bam
 The full slurm script [sam_sort_bam.sh ](/mapping/sam_sort_bam.sh) can be found in **mapping/** directory.  
 
 <pre style="color: silver; background: black;">bash-4.2$ sbatch sam_sort_bam.sh</pre>
+<h2 id="Fifth_Point_Header">Reference Guided Transcript Assembly</h2>
+String tie can be executed in 3 different modes
+1. Exclusively reference guided
+2. Reference guided transcript discovery mode
+3. De-novo mode
+
+We will be running stringtie using the option 2 that includes step 7, 8 and 9.  In the first step stringtie is used with sample bam file and  refernce gtf file to generate a gtf file corresponding to the sample.  This gtf file have information on expression levels of transcripts, exons and other features along with any novel transcripts.
+
+`stringtie -p 4 -l label -G Reference.gtf -o sample.gtf sample.bam`
+In this command
+-p specifies the number of threads to use.
+-l label used in gtf file
+-G Reference GTF available from public domain databases
+-o output gtf corresponding to expression levels of features of the sample
+
+Once we have ran this command through all our six samples (WT1, WT2, WT3, EE1,EE2 and EE3) we will have 6 gtf files corresponding to each sample with feature expression values. At this stage having 6 different gtf files is of no advantage as each may contain same novel transcript but labelled differently.  Ideally we would like to merge these 6 gtf files along with the reference GTF to achieve following goals
+- Redundant transcripts across the samples should be represented once
+- Known transcripts should hold their stable gene ID's assigned in Ensembl
+- Novel transcripts present across multiple samples with different names should be represented once.
+
+The command we will use to achieve this is `stringtie --merge` and the command will be
+`stringtie --merge -p 4 -o stringtie_merged.gtf -G Reference.gtf listOfSampleGTFs.txt`
+
+-p specifies the number of threads to use
+-G Reference GTF available from public domain databases
+-o output merged gtf file
+listOfSampleGTFs.txt : This is a text file witn list of gtfs generated for the samples in previous step.
+
+`ls -1 ath*/*.gtf >> sample_assembly_gtf_list.txt`
+
+The command above is to generate `listOfSampleGTFs.txt` used in the `stringtie --merge` command.
+Once we have generated our merged GTF we can compare it with Reference GTF to get some stats on the stringtie_merged.gtf. So for our samples, all the above steps can be written in a script as shown below
+
+``` nano stringtie_gtf.sh
+#!/bin/bash
+#SBATCH --job-name=stringtie
+#SBATCH --mail-user=
+#SBATCH --mail-type=ALL
+#SBATCH -n 1
+#SBATCH -N 1
+#SBATCH -c 8
+#SBATCH --mem=40G
+#SBATCH -o %x_%j.out
+#SBATCH -e %x_%j.err
+#SBATCH --partition=himem
+#SBATCH --qos=himem
+
+export TMPDIR=/home/CAM/$USER/tmp/
+
+#mkdir -p {athaliana_wt_Rep1,athaliana_wt_Rep2,athaliana_wt_Rep3,athaliana_EE_Rep1,athaliana_EE_Rep2,athaliana_EE_Rep3}
+
+module load stringtie
+
+stringtie -p 8 -l wT1 -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_wt_Rep1/transcripts.gtf ../mapping/wt_Rep1_sort.bam
+stringtie -p 8 -l wT2 -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_wt_Rep2/transcripts.gtf ../mapping/wt_Rep2_sort.bam
+stringtie -p 8 -l wT3 -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_wt_Rep3/transcripts.gtf ../mapping/wt_Rep3_sort.bam
+
+stringtie -p 8 -l EE1 -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_EE_Rep1/transcripts.gtf ../mapping/EE_Rep1_sort.bam
+stringtie -p 8 -l EE2 -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_EE_Rep2/transcripts.gtf ../mapping/EE_Rep2_sort.bam
+stringtie -p 8 -l EE3 -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_EE_Rep3/transcripts.gtf ../mapping/EE_Rep3_sort.bam
+
+ls -1 ath*/*.gtf >> sample_assembly_gtf_list.txt
+stringtie --merge -p 8 -o stringtie_merged.gtf -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf sample_assembly_gtf_list.txt
+
+module load gffcompare/0.10.4
+
+gffcompare -r /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o gffcompare stringtie_merged.gtf
+```
+If we open any of the sample GTF files we can see the contents
+```less 
+# StringTie version 2.0.3
+1       StringTie       transcript      3631    5899    1000    +       .       gene_id "EE1.1"; transcript_id "EE1.1.1"; reference_id "AT1G01010.1"; ref_gene_id "AT1G01010"; ref_gene_name "AT1G01010"; cov "2.338863"; FPKM "1.194506"; TPM "1.609814";
+1       StringTie       exon    3631    3913    1000    +       .       gene_id "EE1.1"; transcript_id "EE1.1.1"; exon_number "1"; reference_id "AT1G01010.1"; ref_gene_id "AT1G01010"; ref_gene_name "AT1G01010"; cov "3.505300";
+1       StringTie       exon    3996    4276    1000    +       .       gene_id "EE1.1"; transcript_id "EE1.1.1"; exon_number "2"; reference_id "AT1G01010.1"; ref_gene_id "AT1G01010"; ref_gene_name "AT1G01010"; cov "3.217082";
+1       StringTie       exon    4486    4605    1000    +       .       gene_id "EE1.1"; transcript_id "EE1.1.1"; exon_number "3"; reference_id "AT1G01010.1"; ref_gene_id "AT1G01010"; ref_gene_name "AT1G01010"; cov "0.866667";
+1       StringTie       exon    4706    5095    1000    +       .       gene_id "EE1.1"; transcript_id "EE1.1.1"; exon_number "4"; reference_id "AT1G01010.1"; ref_gene_id "AT1G01010"; ref_gene_name "AT1G01010"; cov "2.884615";
+```
+The covrage, FPKM, TPM and other information on the transcripts are available in the GTF file. Press `Q` to come out of the display. Now lets have a look at out merged GTF file `stringtie_merged.gtf
+` from the previous script/
+
+```less stringtie_merged.gtf
+# stringtie --merge -p 8 -o stringtie_merged.gtf -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf sample_assembly_gtf_list.txt
+# StringTie version 2.0.3
+1       StringTie       transcript      3631    5899    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; gene_name "AT1G01010"; ref_gene_id "AT1G01010";
+1       StringTie       exon    3631    3913    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "1"; gene_name "AT1G01010"; ref_gene_id "AT1G01010";
+1       StringTie       exon    3996    4276    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "2"; gene_name "AT1G01010"; ref_gene_id "AT1G01010";
+1       StringTie       exon    4486    4605    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "3"; gene_name "AT1G01010"; ref_gene_id "AT1G01010";
+1       StringTie       exon    4706    5095    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "4"; gene_name "AT1G01010"; ref_gene_id "AT1G01010";
+1       StringTie       exon    5174    5326    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "5"; gene_name "AT1G01010"; ref_gene_id "AT1G01010";
+1       StringTie       exon    5439    5899    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "6"; gene_name "AT1G01010"; ref_gene_id "AT1G01010";
+1       StringTie       transcript      11649   13714   1000    -       .       gene_id "MSTRG.2"; transcript_id "AT1G01030.1"; gene_name "AT1G01030"; ref_gene_id "AT1G01030";
+1       StringTie       exon    11649   13173   1000    -       .       gene_id "MSTRG.2"; transcript_id "AT1G01030.1"; exon_number "1"; gene_name "AT1G01030"; ref_gene_id "AT1G01030";
+1       StringTie       exon    13335   13714   1000    -       .       gene_id "MSTRG.2"; transcript_id "AT1G01030.1"; exon_number "2"; gene_name "AT1G01030"; ref_gene_id "AT1G01030";
+1       StringTie       transcript      11676   13714   1000    -       .       gene_id "MSTRG.2"; transcript_id "MSTRG.2.2";
+1       StringTie       exon    11676   12354   1000    -       .       gene_id "MSTRG.2"; transcript_id "MSTRG.2.2"; exon_number "1";
+1       StringTie       exon    12424   13173   1000    -       .       gene_id "MSTRG.2"; transcript_id "MSTRG.2.2"; exon_number "2";
+1       StringTie       exon    13335   13714   1000    -       .       gene_id "MSTRG.2"; transcript_id "MSTRG.2.2"; exon_number "3";
+```
+This is our new refernce GTF file we will be using to quantif the xpression of dfferent genes and transcripts.  If you have a closer look we can see that this file do not contain any of the coverage, TPM and FPKM information.  Thats how we want it as it is going to serve refernce in sunsequent analysis.  Also note that the first two transcripts have know ENSEMBL `transcrip-id`,`gene_name` and `ref_gene_id`, however they are missing in transcript 3.  This is because that represents a novel transcript identified in the study.  Since we have created a master refernce gTF file `stringtie_merged.gtf` lets go ahead and detemine the expression of features in the samples.
+
+Before we go ahead lets have look at the GFF compare stats.  The file we are looking for is `gffcompare.stats`, and the contents are self explanatory.
+```less gffcompare.stats
+
+# gffcompare v0.10.4 | Command line was:
+#gffcompare -r /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o gffcompare stringtie_merged.gtf .  One can explore other files `gffcompare.annotated.gtf`,`gffcompare.loci`,`gffcompare.stats`,`gffcompare.stringtie_merged.gtf.refmap`,`gffcompare.stringtie_merged.gtf.tmap`,`gffcompare.tracking` of the comparison to have a deeper understanding of the differences.
+#
+
+#= Summary for dataset: stringtie_merged.gtf
+#     Query mRNAs :   49714 in   33302 loci  (38049 multi-exon transcripts)
+#            (9420 multi-transcript loci, ~1.5 transcripts per locus)
+# Reference mRNAs :   41607 in   33350 loci  (30127 multi-exon)
+# Super-loci w/ reference transcripts:    32738
+#-----------------| Sensitivity | Precision  |
+        Base level:   100.0     |    97.9    |
+        Exon level:    99.0     |    92.9    |
+      Intron level:   100.0     |    94.6    |
+Intron chain level:   100.0     |    79.2    |
+  Transcript level:    99.8     |    83.5    |
+       Locus level:    99.8     |    98.6    |
+
+     Matching intron chains:   30127
+       Matching transcripts:   41529
+              Matching loci:   33295
+
+          Missed exons:       0/169264  (  0.0%)
+           Novel exons:    2325/181918  (  1.3%)
+        Missed introns:       0/127896  (  0.0%)
+         Novel introns:    2451/135134  (  1.8%)
+           Missed loci:       0/33350   (  0.0%)
+            Novel loci:     424/33302   (  1.3%)
+
+ Total union super-loci across all input datasets: 33302
+49714 out of 49714 consensus transcripts written in gffcompare.annotated.gtf (0 discarded as redundant)
+
+``` 
+Now lets go ahead and do the transcript quantification using stringtie.
+
 
 <h2 id="Fifth_Point_Header">Transcript quantification with StringTie</h2>
 
