@@ -21,17 +21,17 @@ module load MultiQC
 
 
 
-fastqc -t 4 ../trimmed_reads/trimmed_wt_Rep1_R1.fastq ../trimmed_reads/trimmed_wt_Rep1_R2.fastq
+fastqc --outdir . -t 4 ../trimmed_reads/trimmed_wt_Rep1_R1.fastq ../trimmed_reads/trimmed_wt_Rep1_R2.fastq
 
-fastqc -t 4 ../trimmed_reads/trimmed_wt_Rep2_R1.fastq ../trimmed_reads/trimmed_wt_Rep2_R2.fastq
+fastqc --outdir . -t 4 ../trimmed_reads/trimmed_wt_Rep2_R1.fastq ../trimmed_reads/trimmed_wt_Rep2_R2.fastq
 
-fastqc -t 4 ../trimmed_reads/trimmed_wt_Rep3_R1.fastq ../trimmed_reads/trimmed_wt_Rep3_R2.fastq
+fastqc --outdir . -t 4 ../trimmed_reads/trimmed_wt_Rep3_R1.fastq ../trimmed_reads/trimmed_wt_Rep3_R2.fastq
 
-fastqc -t 4 ../trimmed_reads/trimmed_mutant_Rep1_R1.fastq ../trimmed_reads/trimmed_mutant_Rep1_R2.fastq
+fastqc --outdir . -t 4 ../trimmed_reads/trimmed_EE_Rep1_R1.fastq ../trimmed_reads/trimmed_EE_Rep1_R2.fastq
 
-fastqc -t 4 ../trimmed_reads/trimmed_mutant_Rep2_R1.fastq ../trimmed_reads/trimmed_mutant_Rep2_R2.fastq
+fastqc --outdir . -t 4 ../trimmed_reads/trimmed_EE_Rep2_R1.fastq ../trimmed_reads/trimmed_EE_Rep2_R2.fastq
 
-fastqc -t 4 ../trimmed_reads/trimmed_mutant_Rep3_R1.fastq ../trimmed_reads/trimmed_mutant_Rep3_R2.fastq
+fastqc --outdir . -t 4 ../trimmed_reads/trimmed_EE_Rep3_R1.fastq ../trimmed_reads/trimmed_EE_Rep3_R2.fastq
 
 multiqc -n trimmed_fastqc .
 
