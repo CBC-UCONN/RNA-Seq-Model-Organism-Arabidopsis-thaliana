@@ -1,5 +1,7 @@
 # RNA-Seq for Model Plant (Arabidopsis thaliana)
 
+<img src="Hisat_stringtie_ballgown_WF.png">
+<h2 >Tutorial</h2>
 This repository is a usable, publicly available tutorial for analyzing differential expression data and creating topological gene networks. All steps have been provided for the UConn CBC Xanadu cluster here with appropriate headers for the Slurm scheduler that can be modified simply to run.  Commands should never be executed on the submit nodes of any HPC machine.  If working on the Xanadu cluster, you should use sbatch scriptname after modifying the script for each stage.  Basic editing of all scripts can be performed on the server with tools such as nano, vim, or emacs.  If you are new to Linux, please use <a href="https://bio Informatics.uconn.edu/unix-basics/">this</a> handy guide for the operating system commands.  In this guide, you will be working with common bio Informatic file formats, such as <a href="https://en.wikipedia.org/wiki/FASTA_format">FASTA</a>, <a href="https://en.wikipedia.org/wiki/FASTQ_format">FASTQ</a>, <a href="https://en.wikipedia.org/wiki/SAM_(file_format)">SAM/BAM</a>, and <a href="https://en.wikipedia.org/wiki/General_feature_format">GFF3/GTF</a>. You can learn even more about each file format <a href="https://bio Informatics.uconn.edu/resources-and-events/tutorials/file-formats-tutorial/">here</a>. If you do not have a Xanadu account and are an affiliate of UConn/UCHC, please apply for one <a href="https://bio Informatics.uconn.edu/contact-us/">here</a>.
 	
 <div id="toc_container">
@@ -9,71 +11,75 @@ This repository is a usable, publicly available tutorial for analyzing different
 <li><a href="#Second_Point_Header">2 Accessing the data using sra-toolkit</a></li>
 <li><a href="#Third_Point_Header">3 Quality control using sickle</a></li>
 <li><a href="#Fourth_Point_Header">4 Aligning reads to a genome using hisat2</a></li>
-<li><a href="#Fifth_Point_Header">5 Transcript assembly and quantification with StringTie</a></li>
-<li><a href="#Sixth_Point_Header">6 Differential expression analysis using ballgown</a></li>
-<li><a href="#Seventh_Point_Header">7 Topological networking using cytoscape</a></li>
- <li><a href="#Eighth_Point_Header">8 Conclusion</a></li>
+<li><a href="#Fifth_Point_Header">5 Fifth_Point_Header">Reference Guided Transcript Assembly</a></li>
+<li><a href="#Sixth_Point_Header">6 Transcript quantification with StringTie</a></li>
+<li><a href="#Seventh_Point_Header">7 Differential expression analysis using ballgown</a></li>
+<li><a href="#Eighth_Point_Header">8 Gene annotation with BiomaRt</a></li>
+<li><a href="#Ninth_Point_Header">9 Topological networking using cytoscape</a></li>
+<li><a href="#Tenth_Point_Header">10 Conclusion</a></li>
 </ul>
 </div>
 
 <h2 id="First_Point_Header">Introduction and programs</h2>
 
-In this tutorial, we will be analyzing thale cress (Arabidopsis thaliana) RNA-Seq data from various parts of the plant (roots, stems). Perhaps one of the most common organisms for genetic study, the aggregrate wealth of genetic  Information of the thale cress makes it ideal for new-comers to learn. Organisms such as this we call "model organisms". You may think of model organisms as a subset of living things which, under the normal conventions of analysis, behave nicely. The data we will be analyzing comes from an experiment in which various cellular RNA was collected from the roots and shoots of a single thale cress. The RNA profiles are archived in the SRA, and meta Information on each may be viewed through the SRA ID: SRR8428904, SRR8428905, SRR8428906, SRR8428907, SRR8428908, SRR8428909(https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP178230).
+*Arabidopsis thaliana* is a small flowering plant that is used as a model system in research of plant biology. It helped researchers to build basic understanding around molecular, biochemical and genetics processes in the plants.  A wealth of knowledge and information is available around Arabidopsis genomics (genome sequence, transcriptome, genetic markers etc) and hence could be used as ideal system to develop fundamental understanding plant RNA-seq analysis before venturing in the transcriptomics world of non moodel species. In this tutorial we will be using RNAseq dataset from the flower buds of A. thaliana and the study was published in "Frontiers in Plant Science" (https://www.frontiersin.org/articles/10.3389/fpls.2019.00763/full).  This study was aimed at understanding the functional role of Monoacylglycerol lipase (MAGL) hydrolyzes known to produce free fatty acid and glycerol. The enzyme is well studied in animal kingdom but a little is known about its function in plants. This study involves ectopic expression (EE) of BnaC.MAGL8.a in Arabidopsis to explore its potential biological function. They observed that this ectopic expression causes male sterility by affecting the devlopment of pollens.  To develop their molecular understanding around the process they carried out RNAseq studies in the flower buds.  Total 6 RNAseq datasets representing 3 biological replicates each for WT and BnaC.MAGL8.a were used in this study The RNA profiles are archived in the SRA, and meta Information on each may be viewed through the SRA ID: SRR8428904, SRR8428905, SRR8428906, SRR8428907, SRR8428908, SRR8428909(https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP178230).
 
 The Single Read Archive, or SRA, is a publicly available database containing read sequences from a variety of experiments. Scientists who would like their read sequences present on the SRA submit a report containing the read sequences, experimental details, and any other accessory meta-data.
 
-MAGLs participate lipid mobilization and endocannabinoid signalling in mammal. However, their potential biological function in plants remains elusive. In a survey of BnMAGL molecular function, BnA9::BnMAGL8.1 transgenic plants were outstanding with their male sterile phenotype. To discover the mechanism undering the phenotype, we conducted RNAseq on flower buds in stage 6-9 from BnA9::BnMAGL8.1 transgenic plants with wild type (Col ecotype). Overall design: 3 biological replicates for BnA9::BnMAGL8.1 (mutant) transgenic buds and 3 biological replicates for WT buds
+Our data, SRR8428904, SRR8428905, SRR8428906, SRR8428907, SRR8428908, SRR8428909 come from EE1, EE2, EE3, WT1, WT2, and WT3 respectively. Our objective in this analysis is to determine which genes are expressed in all samples, quantify the expression of each common gene in each sample, identify genes which are differentially expressed between  WT1, WT2 and WT3  EE1, EE2 and EE3, quantify the relative expression of such genes, and lastly to create a visual topological network of genes with similar expression profiles.
 
-Our data, SRR8428904, SRR8428905, SRR8428906, SRR8428907, SRR8428908, SRR8428909 come from WT1, WT2, WT3, mutant1, mutant2, and mutant3 respectively. Our objective in this analysis is to determine which genes are expressed in all samples, quantify the expression of each common gene in each sample, identify genes which are lowly expressed in  WT1, WT2 and WT3 but highly expressed in  mutant1, mutant2, and mutant3 or vice versa, quantify the relative expression of such genes, and lastly to create a visual topological network of genes with similar expression profiles.
-
-You may connect to Xanadu via SSH, which will place you in your home directory
+You may connect to Xanadu via SSH, which will direct you in your home directory
 
 <pre style="color: silver; background: black;">-bash-4.2$ cd /home/CAM/$USER</pre> 
 
-Your home directory contains 10TB of storage and will not pollute the capacities of other users on the cluster. 
+Your home directory contains 2TB of storage and will not pollute the capacities of other users on the cluster. 
 
 The workflow may be cloned into the appropriate directory using the terminal command:
-<pre style="color: silver; background: black;">-bash-4.2$ git clone https://github.com/CBC-UCONN/RNA-Seq-Model-Organism-Arabidopsis-thaliana.git
--bash-4.2$ cd rnaseq_for_model_plant
--bash-4.2$ ls
--bash-4.2$ cd rnaseq_for_model_plant/
--bash-4.2$ ls
-<strong>all_clusters.csv.png           README.md
-complete_edge_list.csv.png     Rplot.png
-cytoscape1.png                 sam_sort_bam.sh
-cytoscape2.png                 sickle_run.sh
-cytoscape3.png                 transcript_assembly.sh
-cytoscape4.png                 trimmed.html
-cytoscape5.png                 trimmed_SRR3498212_fastqc.html
-data_dump.sh                   trimmed_SRR3498213_fastqc.html
-hisat2_run.sh                  trimmed_SRR3498215_fastqc.html
-pcaplot_for_all_libraries.png  trimmed_SRR3498216_fastqc.html
-quality_control.sh
-</strong>
-</pre>
+```bash
+git clone https://github.com/CBC-UCONN/RNA-Seq-Model-Organism-Arabidopsis-thaliana.git
+```
+Then change the directory to the **RNA-Seq-Model-Organism-Arabidopsis-thaliana/** folder, where you can see the following folder structure:  
+```
+RNA-Seq-Model-Organism-Arabidopsis-thaliana
+├── raw_data
+├── trimmed_reads
+├── trimmed_fastqc
+├── mapping
+└── ballgown
+```
 
-All of the completed scripts for this tutorial are available for you to submit. However, before submitting, you may want to edit the scripts to include your email!
+The tutorial is divided in sections so you can follow it easily. 
 
-Before beginning, we need to understand a few aspects of the Xanadu server. When first logging into Xanadu from your local terminal, you will be connected to the submit node. The submit node is the interface with which users on Xanadu may <i>submit</i> their processes to the desired compute nodes, which will run the process. Never, under any circumstance, run processes directly in the submit node. Your process will be killed and all of your work lost! This tutorial will not teach you shell script configuration to submit your tasks on Xanadu. Therefore, before moving on, read and master the topics covered in the <a href="https://bio Informatics.uconn.edu/resources-and-events/tutorials/xanadu/">Xanadu tutorial</a>.
-
-Now that we have covered the introduction and objective of our analysis, we may begin!
 
 <h2 id="Second_Point_Header">Accessing the data using sra-toolkit </h2>
 
 We know that the SRA contain the read sequences and accessory meta Information from experiments. Rather than downloading experimental data through a browser, we may use the <a href="https://www.ncbi.nlm.nih.gov/books/NBK158900/">sratoolkit</a>'s "fastq-dump" function to directly dump raw read data into the current terminal directory. Let's have a look at this function (it is expected that you have read the Xanadu tutorial, and are familiar with loading modules):
 
-<pre style="color: silver; background: black;">-bash-4.2$ module load sratoolkit
+To load the module and to check the options you can simply type `fastq-dump` once you load the module in the terminal window.
+```bash
+module load sratoolkit
+
+fastq-dump
+```
+
+Which will show you the following options it has:
+```
   fastq-dump [options] <path> [<path>...]
   fastq-dump [options] <accession>
 
 Use option --help for more  Information
 
-fastq-dump : 2.8.2 </pre>
+fastq-dump : 2.8.2 
+```
 
-For our needs, we will simply be using the accession numbers to dump our experimental data into our directory. We know our accession numbers, so let's write a shell script to retrieve our raw reads. There are a variety of text editors available on Xanadu. My preferred text editor is "nano". Therefore, we will be using nano to write our shell script.
+For our needs, we will simply be using the accession numbers to download our experimental data into our directory. We know our accession numbers, so let's write a shell script to retrieve our raw reads. There are a variety of text editors available on Xanadu. My preferred text editor is "nano". Therefore, we will be using nano to write our shell script.
 
-<pre style="color: silver; background: black;">-bash-4.2$ nano data_dump.sh
+``` 
+nano data_dump.sh
+```
+
                                                                                                      
+```bash
 
 #!/bin/bash
 #SBATCH --job-name=data_dump
@@ -105,17 +111,17 @@ mv SRR8428907_1.fastq wt_Rep3_R1.fastq
 mv SRR8428907_2.fastq wt_Rep3_R2.fastq
 
 fastq-dump --split-files SRR8428906
-mv SRR8428906_1.fastq mutant_Rep1_R1.fastq
-mv SRR8428906_2.fastq mutant_Rep1_R2.fastq
+mv SRR8428906_1.fastq EE_Rep1_R1.fastq
+mv SRR8428906_2.fastq EE_Rep1_R2.fastq
 
 fastq-dump --split-files SRR8428905
-mv SRR8428905_1.fastq mutant_Rep2_R1.fastq
-mv SRR8428905_2.fastq mutant_Rep2_R2.fastq
+mv SRR8428905_1.fastq EE_Rep2_R1.fastq
+mv SRR8428905_2.fastq EE_Rep2_R2.fastq
 
 fastq-dump --split-files SRR8428904
-mv SRR8428904_1.fastq mutant_Rep3_R1.fastq
-mv SRR8428904_2.fastq mutant_Rep3_R2.fastq
-</pre>
+mv SRR8428904_1.fastq EE_Rep3_R1.fastq
+mv SRR8428904_2.fastq EE_Rep3_R2.fastq
+```
 
 The full slurm script is called [data_dump.sh](/raw_data/data_dump.sh) can be found in **raw_data/** folder.  
 
@@ -130,7 +136,7 @@ Now we wait until we receive an email that our process has finished.
 Let's take a look at one of our files:
 
 ```bash
--bash-4.2$ head mutant_Rep1_R1.fastq
+-bash-4.2$ head EE_Rep1_R1.fastq
 @SRR8428906.1 1 length=150
 CCTGAACAACTCATCAGCGGTAAAGAAGATGCAGCTAACAATTTCGCCCGTGGTCATTACACCATTGGGAAAGAGATTGTTGACCTGTGCTTAGACCGTATCAGAAAGCTTGCTGATAACTGTACTGGTCTCCAAGGATTCCTCGTCTTC
 +SRR8428906.1 1 length=150
@@ -198,7 +204,7 @@ Global options
 --help, display this help and exit
 --version, output version information and exit</pre>
 
-The quality may be any score from 0 to 40. The default of 20 is much too low for a robust analysis. We want to select only reads with a quality of 35 or better. Additionally, the desired length of each read is 50bp. Again, we see that a default of 20 is much too low for analysis confidence. We want to select only reads whose lengths exceed 45bp. Lastly, we must know the scoring type. While the quality type is not listed on the SRA pages, most SRA reads use the "sanger" quality type. Unless explicitly stated, try running sickle using the sanger qualities. If an error is returned, try illumina. If another error is returned, lastly try solexa.
+The quality may be any score from 0 to 40. The default of 20 is much too low for a robust analysis. We want to select only reads with a quality of 35 or better. Additionally, the desired length of each read is 50bp. Again, we see that a default of 20 is much too low for analysis confidence. We want to select only reads whose lengths exceed 45bp. Lastly, we must know the scoring type. While the quality type is not listed on the SRA pages, most SRA reads use the "sanger" quality type. Unless explicitly stated, try running sickle using the sanger qualities. 
 
 Let's put all of this together for our sickle script using our downloaded fastq files:
 
@@ -230,11 +236,11 @@ sickle pe -t sanger -f ../raw_data/wt_Rep2_R1.fastq -r ../raw_data/wt_Rep2_R2.fa
 
 sickle pe -t sanger -f ../raw_data/wt_Rep3_R1.fastq -r ../raw_data/wt_Rep3_R2.fastq -o trimmed_wt_Rep3_R1.fastq -p trimmed_wt_Rep3_R2.fastq -l 4 5-q 25 -s singles_wt_Rep3_R1.fastq
 
-sickle pe -t sanger -f ../raw_data/mutant_Rep1_R1.fastq -r ../raw_data/mutant_Rep1_R2.fastq -o trimmed_mutant_Rep1_R1.fastq -p trimmed_mutant_Rep1_R2.fastq -l 45 -q 25 -s singles_mutant_Rep1_R1.fastq
+sickle pe -t sanger -f ../raw_data/EE_Rep1_R1.fastq -r ../raw_data/EE_Rep1_R2.fastq -o trimmed_EE_Rep1_R1.fastq -p trimmed_EE_Rep1_R2.fastq -l 45 -q 25 -s singles_EE_Rep1_R1.fastq
 
-sickle pe -t sanger -f ../raw_data/mutant_Rep2_R1.fastq -r ../raw_data/mutant_Rep2_R2.fastq -o trimmed_mutant_Rep2_R1.fastq -p trimmed_mutant_Rep2_R2.fastq -l 45 -q 25 -s singles_mutant_Rep2_R1.fastq
+sickle pe -t sanger -f ../raw_data/EE_Rep2_R1.fastq -r ../raw_data/EE_Rep2_R2.fastq -o trimmed_EE_Rep2_R1.fastq -p trimmed_EE_Rep2_R2.fastq -l 45 -q 25 -s singles_EE_Rep2_R1.fastq
 
-sickle pe -t sanger -f ../raw_data/mutant_Rep3_R1.fastq -r ../raw_data/mutant_Rep3_R2.fastq -o trimmed_mutant_Rep3_R1.fastq -p trimmed_mutant_Rep3_R2.fastq -l 45 -q 25 -s singles_mutant_Rep3_R1.fastq
+sickle pe -t sanger -f ../raw_data/EE_Rep3_R1.fastq -r ../raw_data/EE_Rep3_R2.fastq -o trimmed_EE_Rep3_R1.fastq -p trimmed_EE_Rep3_R2.fastq -l 45 -q 25 -s singles_EE_Rep3_R1.fastq
 
 </pre>
 <br>
@@ -273,11 +279,11 @@ fastqc -t 4 ../trimmed_reads/trimmed_wt_Rep2_R1.fastq ../trimmed_reads/trimmed_w
 
 fastqc -t 4 ../trimmed_reads/trimmed_wt_Rep3_R1.fastq ../trimmed_reads/trimmed_wt_Rep3_R2.fastq
 
-fastqc -t 4 ../trimmed_reads/trimmed_mutant_Rep1_R1.fastq ../trimmed_reads/trimmed_mutant_Rep1_R2.fastq
+fastqc -t 4 ../trimmed_reads/trimmed_EE_Rep1_R1.fastq ../trimmed_reads/trimmed_EE_Rep1_R2.fastq
 
-fastqc -t 4 ../trimmed_reads/trimmed_mutant_Rep2_R1.fastq ../trimmed_reads/trimmed_mutant_Rep2_R2.fastq
+fastqc -t 4 ../trimmed_reads/trimmed_EE_Rep2_R1.fastq ../trimmed_reads/trimmed_EE_Rep2_R2.fastq
 
-fastqc -t 4 ../trimmed_reads/trimmed_mutant_Rep3_R1.fastq ../trimmed_reads/trimmed_mutant_Rep3_R2.fastq
+fastqc -t 4 ../trimmed_reads/trimmed_EE_Rep3_R1.fastq ../trimmed_reads/trimmed_EE_Rep3_R2.fastq
 
 multiqc -n trimmed_fastqc .
 
@@ -288,7 +294,7 @@ The full slurm script [trimmed_fastqc.sh](/trimmed_fastqc/trimmed_fastqc.sh) can
 
 <pre style="color: silver; background: black;">-bash-4.2$ sbatch quality_control.sh</pre>
 
-fastqc will create the files "trimmed_file_fastqc.html". To have a look at one, we need to move all of our "trimmed_file_fastqc.html" files into a single directory, and then <a href="https://www.techrepublic.com/article/how-to-use-secure-copy-for-file-transfer/">secure copy</a> that folder to our local directory. Then, we may open our files! If that seems like too much work for you, you may open the files directly through this github. Simply click on any "html" file and you may view it in your browser immediately. Because of this, the steps mentioned above will not be placed in this tutorial.
+fastqc will create the files "trimmed_file_fastqc.html". To have a look at one, we need to move all of our "trimmed_file_fastqc.html" files into a single directory, and then <a href="https://www.techrepublic.com/article/how-to-use-secure-copy-for-file-transfer/">secure copy</a> that folder to our local directory. Then, we may open our files! 
 
 This script will also create a directory "trimmed_data". Let's look inside of that directory:
 
@@ -301,11 +307,10 @@ multiqc_general_stats.txt  multiqc_sources.txt
 Let's have a look at the file format from fastqc and multiqc. When loading the fastqc file, you will be greeted with this screen:
 <img src="fastqc1.png">
 
-There are some basic statistics which are all pretty self-explanatory. Notice that none of our sequences fail the quality report! It would be concerning if we had even one because this report is from our trimmed sequence! The same thinking applies to our sequence length. Should the minimum of the sequence length be below 45, we would know that sickle had not run properly. Let's look at the next index in the file:
+There are some basic statistics which are all pretty self-explanatory. 
 <img src="fastqc2.png">
 
-This screen is simply a <a href="https://en.wikipedia.org/wiki/Box_plot">box-and-whiskers plot</a> of our quality scores per base pair. Note that there is a large variance and lower mean scores (but still about in our desired range) for base pairs 1-5. These are the primer sequences! I will leave it to you to ponder the behavior of this graph. If you're stumped, you may want to learn how <a href="https://www.illumina.com/techniques/sequencing.html">Illumina sequencing"</a> works.
-
+This screen is simply a <a href="https://en.wikipedia.org/wiki/Box_plot">box-and-whiskers plot</a> of our quality scores per base pair. 
 Our next index is the per sequence quality scores:
 <img src="fastqc3.png">
 
@@ -331,7 +336,7 @@ HISAT2 version 2.1.0 by Daehwan Kim ( Infphilo@gmail.com, http://www.ccb.jhu.edu
 	reference_in            comma-separated list of files with ref sequences
 	hisat2_index_base       write ht2 data to files with this dir/basename</strong></pre>
 
-As you can see, we simply enter our reference genome files and the desired prefix for our .ht2 files. Now, fortunately for us, Xanadu has many indexed genomes which we may use. To see if there is a hisat2 <i>Arabidopsis thaliana</i> indexed genome we need to look at the <a href="https://bio Informatics.uconn.edu/databases/">Xanadu databases</a> page. We see that our desired indexed genome is in the location /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/Athaliana_HISAT2/. Now we are ready to align our reads using hisat2 (for hisat2, the script is going to be written first with an explanation of the options after).
+As you can see, we simply enter our reference genome files and the desired prefix for our .ht2 files. Now, fortunately for us, Xanadu has many indexed genomes which we may use. To see if there is a hisat2 <i>Arabidopsis thaliana</i> indexed genome we need to look at the <a href="https://bioinformatics.uconn.edu/databases/">Xanadu databases</a> page. We see that our desired indexed genome is in the location /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/Athaliana_HISAT2/. Now we are ready to align our reads using hisat2 (for hisat2, the script is going to be written first with an explanation of the options after).
 
 ```bash
 nano hisat2_run.sh
@@ -363,11 +368,11 @@ hisat2 -p 8 --dta -x /isg/shared/databases/alignerIndex/plant/Arabidopsis/thalia
 
 hisat2 -p 8 --dta -x /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/athaliana10/athaliana10 -1 ../trimmed_reads/trimmed_wt_Rep3_R1.fastq -2 ../trimmed_reads/trimmed_wt_Rep3_R2.fastq -S ../mapping/wt_Rep3.sam
 
-hisat2 -p 8 --dta -x /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/athaliana10/athaliana10 -1 ../trimmed_reads/trimmed_mutant_Rep1_R1.fastq -2 ../trimmed_reads/trimmed_mutant_Rep1_R2.fastq -S ../mapping/_mutant_Rep1.sam
+hisat2 -p 8 --dta -x /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/athaliana10/athaliana10 -1 ../trimmed_reads/trimmed_EE_Rep1_R1.fastq -2 ../trimmed_reads/trimmed_EE_Rep1_R2.fastq -S ../mapping/_EE_Rep1.sam
 
-hisat2 -p 8 --dta -x /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/athaliana10/athaliana10 -1 ../trimmed_reads/trimmed_mutant_Rep2_R1.fastq -2 ../trimmed_reads/trimmed_mutant_Rep2_R2.fastq -S ../mapping/_mutant_Rep2.sam
+hisat2 -p 8 --dta -x /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/athaliana10/athaliana10 -1 ../trimmed_reads/trimmed_EE_Rep2_R1.fastq -2 ../trimmed_reads/trimmed_EE_Rep2_R2.fastq -S ../mapping/_EE_Rep2.sam
 
-hisat2 -p 8 --dta -x /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/athaliana10/athaliana10 -1 ../trimmed_reads/trimmed_mutant_Rep3_R1.fastq -2 ../trimmed_reads/trimmed_mutant_Rep3_R2.fastq -S ../mapping/_mutant_Rep3.sam
+hisat2 -p 8 --dta -x /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/athaliana10/athaliana10 -1 ../trimmed_reads/trimmed_EE_Rep3_R1.fastq -2 ../trimmed_reads/trimmed_EE_Rep3_R2.fastq -S ../mapping/_EE_Rep3.sam
 
 ```
 
@@ -388,14 +393,14 @@ Once the mapping have been completed, the file structure is as follows:
 <strong>wt_Rep1.sam
 wt_Rep2.sam
 wt_Rep3.sam
-mutant_Rep1.sam
-mutant_Rep2.sam
-mutant_Rep3.sam
+EE_Rep1.sam
+EE_Rep2.sam
+EE_Rep3.sam
 </strong></pre>
 
 When HISAT2 completes its run, it will summarize each of it’s alignments, and it is written to the standard error file, which can be found in the same folder once the run is completed.
 
-<pre style="color: silver; background: black;">bash-4.2$ nano hisat2_run&#42;err
+<pre style="color: silver; background: black;">bash-4.2$ less hisat2_run&#42;err
 
                                                                                                           
 
@@ -556,14 +561,14 @@ samtools sort -@ 8 wt_Rep2.bam -o wt_Rep2_sort.bam
 samtools view -@ 8 -bhS wt_Rep3.sam -o wt_Rep3.bam
 samtools sort -@ 8 wt_Rep3.bam -o wt_Rep3_sort.bam
 
-samtools view -@ 8 -bhS mutant_Rep1.sam -o mutant_Rep1.bam
-samtools sort -@ 8 mutant_Rep1.bam -o mutant_Rep1_sort.bam
+samtools view -@ 8 -bhS EE_Rep1.sam -o EE_Rep1.bam
+samtools sort -@ 8 EE_Rep1.bam -o EE_Rep1_sort.bam
 
-samtools view -@ 8 -bhS mutant_Rep2.sam -o mutant_Rep2.bam
-samtools sort -@ 8 mutant_Rep2.bam -o mutant_Rep2_sort.bam
+samtools view -@ 8 -bhS EE_Rep2.sam -o EE_Rep2.bam
+samtools sort -@ 8 EE_Rep2.bam -o EE_Rep2_sort.bam
 
-samtools view -@ 8 -bhS mutant_Rep3.sam -o mutant_Rep3.bam
-samtools sort -@ 8 mutant_Rep3.bam -o mutant_Rep3_sort.bam
+samtools view -@ 8 -bhS EE_Rep3.sam -o EE_Rep3.bam
+samtools sort -@ 8 EE_Rep3.bam -o EE_Rep3_sort.bam
 
 </pre>
 
@@ -571,63 +576,40 @@ The full slurm script [sam_sort_bam.sh ](/mapping/sam_sort_bam.sh) can be found 
 
 <pre style="color: silver; background: black;">bash-4.2$ sbatch sam_sort_bam.sh</pre>
 
-<h2 id="Fifth_Point_Header">Transcript quantification with StringTie</h2>
+<h2 id="Fifth_Point_Header">Reference Guided Transcript Assembly</h2>
+**Stringtie** is a fast and highly efficient assembler of RNA-Seq alignments into potential transcripts. It can be executed in 3 different modes
+1. Exclusively reference guided :  In this mode stringtie quantify the expression of known transcripts only.
+2. Reference guided transcript discovery mode : Quantify known transcripts and detect novel ones.
+3. De-novo mode : Detect and assemble transcripts.
 
-In order to quantify the expression of transcripts/genes we will require a annotation file.  The annotation file is available in gff format and can be downloaded from https://www.arabidopsis.org/download_files/Genes/TAIR10_genome_release/TAIR10_gff3/TAIR10_GFF3_genes.gff   We can download the GFF file for the thale cress with the following code:
-  
-<pre style="color: silver; background: black;">bash-4.2$ wget https://www.arabidopsis.org/download_files/Genes/TAIR10_genome_release/TAIR10_gff3/TAIR10_GFF3_genes.gff
+We will be running stringtie using the option 2 that includes step 7, 8 and 9 of the workflow.  In the first step of this process stringtie along with sample bam file and  refernce gtf file generate a gtf file corresponding to the sample.  This gtf file have information on expression levels of transcripts, exons and other features along with any novel transcripts. The syntax of the command is
 
-bash-4.2$ head TAIR_GFF3_genes.gff
-Chr1	TAIR10	chromosome	1	30427671	.	.	.	ID=Chr1;Name=Chr1
-Chr1	TAIR10	gene	3631	5899	.	+	.	ID=AT1G01010;Note=protein_coding_gene;Name=AT1G01010
-Chr1	TAIR10	mRNA	3631	5899	.	+	.	ID=AT1G01010.1;Parent=AT1G01010;Name=AT1G01010.1;Index=1
-Chr1	TAIR10	protein	3760	5630	.	+	.	ID=AT1G01010.1-Protein;Name=AT1G01010.1;Derives_from=AT1G01010.1
-Chr1	TAIR10	exon	3631	3913	.	+	.	Parent=AT1G01010.1
-Chr1	TAIR10	five_prime_UTR	3631	3759	.	+	.	Parent=AT1G01010.1
-Chr1	TAIR10	CDS	3760	3913	.	+	0	Parent=AT1G01010.1,AT1G01010.1-Protein;
-Chr1	TAIR10	exon	3996	4276	.	+	.	Parent=AT1G01010.1
-Chr1	TAIR10	CDS	3996	4276	.	+	2	Parent=AT1G01010.1,AT1G01010.1-Protein;
-Chr1	TAIR10	exon	4486	4605	.	+	.	Parent=AT1G01010.1
-</pre>
+`stringtie -p 4 -l label -G Reference.gtf -o sample.gtf sample.bam`
+In this command
+-p specifies the number of threads to use.
+-l label used in gtf file
+-G Reference GTF available from public domain databases
+-o output gtf corresponding to expression levels of features of the sample
 
-The GFF file is quite self-explanatory. However, it'd be nice if could combine all of the pieces of  Information from the GFF into something better. For instance, if there are multiple overlapping, but distinct exons from a single gene, we could use that  Information to determine the isoforms of that gene. Then, we could make a file which gives each isoform its own track (there are other extrapolations to be made, but this is our most relevant example). Luckily for us, we can use the program "gffread" to transform our GFF file into the more useful form just stated, The output of <a href="https://github.com/gpertea/gffread">gffread --help</a> is much too dense for us to go into here, but the necessary options will be explained. Do not run this code! We are compiling this code with various other chunks into one script, be patient!
+Once we have ran this command through all our six samples (WT1, WT2, WT3, EE1,EE2 and EE3) we will have 6 gtf files each corresponding to one of the sample containng feature expression values. Having 6 different gtf files is of no advantage as each may contain same novel transcript but labelled differently.  Ideally we would like to merge these 6 gtf files along with the reference GTF to achieve following goals
+- Redundant transcripts across the samples should be represented once
+- Known transcripts should hold their stable gene ID's (assigned in Ensembl)
+- Novel transcripts present across multiple samples with different names should be represented once.
 
-<pre style="color: silver; background: black;">bash-4.2$ module load gffread
-gffread TAIR10_GFF3_genes.gff -T -o athaliana_TAIR10_genes.gtf</pre>
+The command we will use to achieve this is `stringtie --merge` and the syntax is
+`stringtie --merge -p 4 -o stringtie_merged.gtf -G Reference.gtf listOfSampleGTFs.txt`
 
-The option -T tells gffread to convert our input into the gtf format, and the option -o simply is how we call the output. The GTF format is simply the transcript assembly file, and is composed of exons and coding sequences. Let's have a look at the GTF file:
+-p specifies the number of threads to use
+-G Reference GTF available from public domain databases
+-o output merged gtf file
+listOfSampleGTFs.txt : This is a text file with list of gtfs generated freom the samples in previous step.
 
-<pre style="color: silver; background: black;">-bash-4.2$ head athaliana_TAIR10_genes.gtf 
-Chr1	TAIR10	exon	3631	3913	.	+	.	transcript_id "AT1G01010.1"; gene_id "AT1G01010"; gene_name "AT1G01010";
-Chr1	TAIR10	exon	3996	4276	.	+	.	transcript_id "AT1G01010.1"; gene_id "AT1G01010"; gene_name "AT1G01010";
-Chr1	TAIR10	exon	4486	4605	.	+	.	transcript_id "AT1G01010.1"; gene_id "AT1G01010"; gene_name "AT1G01010";
-Chr1	TAIR10	exon	4706	5095	.	+	.	transcript_id "AT1G01010.1"; gene_id "AT1G01010"; gene_name "AT1G01010";
-Chr1	TAIR10	exon	5174	5326	.	+	.	transcript_id "AT1G01010.1"; gene_id "AT1G01010"; gene_name "AT1G01010";
-Chr1	TAIR10	exon	5439	5899	.	+	.	transcript_id "AT1G01010.1"; gene_id "AT1G01010"; gene_name "AT1G01010";
-Chr1	TAIR10	CDS	3760	3913	.	+	0	transcript_id "AT1G01010.1"; gene_id "AT1G01010"; gene_name "AT1G01010";
-Chr1	TAIR10	CDS	3996	4276	.	+	2	transcript_id "AT1G01010.1"; gene_id "AT1G01010"; gene_name "AT1G01010";
-Chr1	TAIR10	CDS	4486	4605	.	+	0	transcript_id "AT1G01010.1"; gene_id "AT1G01010"; gene_name "AT1G01010";
-Chr1	TAIR10	CDS	4706	5095	.	+	0	transcript_id "AT1G01010.1"; gene_id "AT1G01010"; gene_name "AT1G01010";
+`ls -1 ath*/*.gtf >> sample_assembly_gtf_list.txt`
 
--bash-4.2$ tail athaliana_TAIR10_genes.gtf 
-ChrM	TAIR10	exon	349830	351413	.	-	.	transcript_id "ATMG01360.1"; gene_id "ATMG01360"; gene_name "ATMG01360";
-ChrM	TAIR10	CDS	349830	351413	.	-	0	transcript_id "ATMG01360.1"; gene_id "ATMG01360"; gene_name "ATMG01360";
-ChrM	TAIR10	exon	360717	361052	.	-	.	transcript_id "ATMG01370.1"; gene_id "ATMG01370"; gene_name "ATMG01370";
-ChrM	TAIR10	CDS	360717	361052	.	-	0	transcript_id "ATMG01370.1"; gene_id "ATMG01370"; gene_name "ATMG01370";
-ChrM	TAIR10	exon	361062	361179	.	-	.	transcript_id "ATMG01380.1"; gene_id "ATMG01380"; gene_name "ATMG01380";
-ChrM	TAIR10	exon	361350	363284	.	-	.	transcript_id "ATMG01390.1"; gene_id "ATMG01390"; gene_name "ATMG01390";
-ChrM	TAIR10	exon	363725	364042	.	+	.	transcript_id "ATMG01400.1"; gene_id "ATMG01400"; gene_name "ATMG01400";
-ChrM	TAIR10	CDS	363725	364042	.	+	0	transcript_id "ATMG01400.1"; gene_id "ATMG01400"; gene_name "ATMG01400";
-ChrM	TAIR10	exon	366086	366700	.	-	.	transcript_id "ATMG01410.1"; gene_id "ATMG01410"; gene_name "ATMG01410";
-ChrM	TAIR10	CDS	366086	366700	.	-	0	transcript_id "ATMG01410.1"; gene_id "ATMG01410"; gene_name "ATMG01410";
-</pre>
+The command above is to generate `listOfSampleGTFs.txt` that will be used in `stringtie --merge` command.
+The merged GTF can be compared with Reference GTF to get some stats on the stringtie_merged.gtf. The above set of commands can be put together in a script as shown below,
 
-We see that whereas in our GFF file we have various untranslated regions included, as well as annotations, the GTF format contains  Information only on various transcripts for each gene. The "transcript_id" denoter in the last column tells us the gene and its isoform, and everything else about the GTF file is quite apparent!
-
-Just as was stated for our conversion from gff to gtf, it would be helpful for us to perform the same operation on our aligned reads. That is, if there are multiple, overlapping but distinct reads from a single gene, we could combine these reads into one transcript isoform. Because we have the gene isoforms in the gtf file, we can re-map each assembled transcript to a gene isoform and then count how many mappings there are per isoform. This, in effect, allows us to quantify the expression rates of each isoform. We will be using the program <a href="http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual">StringTie</a> to assemble the transcripts for each sample. StringTie requires three input arguments: the BAM alignment file, the genomic GTF file, and the desired output GTF filename. Thus, our code will look like (do not run this!):
-
-<pre style="color: silver; background: black;">                                                                                                          
-
+``` nano stringtie_gtf.sh
 #!/bin/bash
 #SBATCH --job-name=stringtie
 #SBATCH --mail-user=
@@ -635,30 +617,147 @@ Just as was stated for our conversion from gff to gtf, it would be helpful for u
 #SBATCH -n 1
 #SBATCH -N 1
 #SBATCH -c 8
-#SBATCH --mem=120G
+#SBATCH --mem=40G
 #SBATCH -o %x_%j.out
 #SBATCH -e %x_%j.err
-#SBATCH --partition=general
-#SBATCH --qos=general
+#SBATCH --partition=himem
+#SBATCH --qos=himem
 
 export TMPDIR=/home/CAM/$USER/tmp/
 
-mkdir -p ../ballgown/{athaliana_wt_Rep1,athaliana_wt_Rep2,athaliana_wt_Rep3,athaliana_mutant_Rep1,athaliana_mutant_Rep2,athaliana_mutant_Rep3}
+#mkdir -p {athaliana_wt_Rep1,athaliana_wt_Rep2,athaliana_wt_Rep3,athaliana_EE_Rep1,athaliana_EE_Rep2,athaliana_EE_Rep3}
 
 module load stringtie
 
-stringtie -e -B -p 8 ../mapping/wt_Rep1_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_wt_Rep1/athaliana_wt_Rep1.count -A athaliana_wt_Rep1/wt_Rep1_gene_abun.out
+stringtie -p 8 -l wT1 -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_wt_Rep1/transcripts.gtf ../mapping/wt_Rep1_sort.bam
+stringtie -p 8 -l wT2 -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_wt_Rep2/transcripts.gtf ../mapping/wt_Rep2_sort.bam
+stringtie -p 8 -l wT3 -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_wt_Rep3/transcripts.gtf ../mapping/wt_Rep3_sort.bam
 
-stringtie -e -B -p 8 ../mapping/wt_Rep2_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_wt_Rep2/athaliana_wt_Rep2.count -A athaliana_wt_Rep2/wt_Rep2_gene_abun.out
+stringtie -p 8 -l EE1 -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_EE_Rep1/transcripts.gtf ../mapping/EE_Rep1_sort.bam
+stringtie -p 8 -l EE2 -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_EE_Rep2/transcripts.gtf ../mapping/EE_Rep2_sort.bam
+stringtie -p 8 -l EE3 -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_EE_Rep3/transcripts.gtf ../mapping/EE_Rep3_sort.bam
 
-stringtie -e -B -p 8 ../mapping/wt_Rep3_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_wt_Rep3/athaliana_wt_Rep3.count -A athaliana_wt_Rep3/wt_Rep3_gene_abun.out
+ls -1 ath*/*.gtf >> sample_assembly_gtf_list.txt
+stringtie --merge -p 8 -o stringtie_merged.gtf -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf sample_assembly_gtf_list.txt
 
-stringtie -e -B -p 8 ../mapping/mutant_Rep1_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_mutant_Rep1/athaliana_mutant_Rep1.count -A athaliana_mutant_Rep1/mutant_Rep1_gene_abun.out
+module load gffcompare/0.10.4
 
-stringtie -e -B -p 8 ../mapping/mutant_Rep2_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_mutant_Rep2/athaliana_mutant_Rep2.count -A athaliana_mutant_Rep2/mutant_Rep2_gene_abun.out
+gffcompare -r /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o gffcompare stringtie_merged.gtf
+```
+Now lets examine the outputs generated from this script.  As discussed above in first step stringtie genrates a gtf file for each sample with details of covrage, FPKM, TPM and other information on the transcripts based on sample bam file.
+```less transcripts.gtf
+# StringTie version 2.0.3
+1       StringTie       transcript      3631    5899    1000    +       .       gene_id "EE1.1"; transcript_id "EE1.1.1"; reference_id "AT1G01010.1"; ref_gene_id "AT1G01010"; ref_gene_name "AT1G01010"; cov "2.338863"; FPKM "1.194506"; TPM "1.609814";
+1       StringTie       exon    3631    3913    1000    +       .       gene_id "EE1.1"; transcript_id "EE1.1.1"; exon_number "1"; reference_id "AT1G01010.1"; ref_gene_id "AT1G01010"; ref_gene_name "AT1G01010"; cov "3.505300";
+1       StringTie       exon    3996    4276    1000    +       .       gene_id "EE1.1"; transcript_id "EE1.1.1"; exon_number "2"; reference_id "AT1G01010.1"; ref_gene_id "AT1G01010"; ref_gene_name "AT1G01010"; cov "3.217082";
+1       StringTie       exon    4486    4605    1000    +       .       gene_id "EE1.1"; transcript_id "EE1.1.1"; exon_number "3"; reference_id "AT1G01010.1"; ref_gene_id "AT1G01010"; ref_gene_name "AT1G01010"; cov "0.866667";
+1       StringTie       exon    4706    5095    1000    +       .       gene_id "EE1.1"; transcript_id "EE1.1.1"; exon_number "4"; reference_id "AT1G01010.1"; ref_gene_id "AT1G01010"; ref_gene_name "AT1G01010"; cov "2.884615";
+```
+. Press `Q` to come out of the display. 
+Now lets have a look at out merged GTF file `stringtie_merged.gtf
+` from the previous script/
 
-stringtie -e -B -p 8 ../mapping/mutant_Rep3_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o athaliana_mutant_Rep3/athaliana_mutant_Rep3.count -A athaliana_mutant_Rep3/mutant_Rep3_gene_abun.out
+```less stringtie_merged.gtf
+# stringtie --merge -p 8 -o stringtie_merged.gtf -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf sample_assembly_gtf_list.txt
+# StringTie version 2.0.3
+1       StringTie       transcript      3631    5899    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; gene_name "AT1G01010"; ref_gene_id "AT1G01010";
+1       StringTie       exon    3631    3913    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "1"; gene_name "AT1G01010"; ref_gene_id "AT1G01010";
+1       StringTie       exon    3996    4276    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "2"; gene_name "AT1G01010"; ref_gene_id "AT1G01010";
+1       StringTie       exon    4486    4605    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "3"; gene_name "AT1G01010"; ref_gene_id "AT1G01010";
+1       StringTie       exon    4706    5095    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "4"; gene_name "AT1G01010"; ref_gene_id "AT1G01010";
+1       StringTie       exon    5174    5326    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "5"; gene_name "AT1G01010"; ref_gene_id "AT1G01010";
+1       StringTie       exon    5439    5899    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "6"; gene_name "AT1G01010"; ref_gene_id "AT1G01010";
+1       StringTie       transcript      11649   13714   1000    -       .       gene_id "MSTRG.2"; transcript_id "AT1G01030.1"; gene_name "AT1G01030"; ref_gene_id "AT1G01030";
+1       StringTie       exon    11649   13173   1000    -       .       gene_id "MSTRG.2"; transcript_id "AT1G01030.1"; exon_number "1"; gene_name "AT1G01030"; ref_gene_id "AT1G01030";
+1       StringTie       exon    13335   13714   1000    -       .       gene_id "MSTRG.2"; transcript_id "AT1G01030.1"; exon_number "2"; gene_name "AT1G01030"; ref_gene_id "AT1G01030";
+1       StringTie       transcript      11676   13714   1000    -       .       gene_id "MSTRG.2"; transcript_id "MSTRG.2.2";
+1       StringTie       exon    11676   12354   1000    -       .       gene_id "MSTRG.2"; transcript_id "MSTRG.2.2"; exon_number "1";
+1       StringTie       exon    12424   13173   1000    -       .       gene_id "MSTRG.2"; transcript_id "MSTRG.2.2"; exon_number "2";
+1       StringTie       exon    13335   13714   1000    -       .       gene_id "MSTRG.2"; transcript_id "MSTRG.2.2"; exon_number "3";
+```
+This is our new refernce GTF file we will be using to quantify the expression of dfferent genes and transcripts.  If we look closer we can see that the file have information different features but exclude coverage, TPM and FPKM information.  Thats how we want it to be for use as refernce in sunsequent analysis.  Also note that the first two transcripts have known ENSEMBL `transcrip-id`,`gene_name` and `ref_gene_id`, however it is missing in transcript 3.  This is because it represents a novel transcript identified in the study.  
 
+Before we go ahead lets have look at the GFF compare stats.  The file we are looking for is `gffcompare.stats`, and the contents are self explanatory. One can explore other files `gffcompare.annotated.gtf`,`gffcompare.loci`,`gffcompare.stats`,`gffcompare.stringtie_merged.gtf.refmap`,`gffcompare.stringtie_merged.gtf.tmap`,`gffcompare.tracking` of the comparison to have a deeper understanding of the differences.
+```less gffcompare.stats
+
+# gffcompare v0.10.4 | Command line was:
+#gffcompare -r /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o gffcompare stringtie_merged.gtf .  
+#
+
+#= Summary for dataset: stringtie_merged.gtf
+#     Query mRNAs :   49714 in   33302 loci  (38049 multi-exon transcripts)
+#            (9420 multi-transcript loci, ~1.5 transcripts per locus)
+# Reference mRNAs :   41607 in   33350 loci  (30127 multi-exon)
+# Super-loci w/ reference transcripts:    32738
+#-----------------| Sensitivity | Precision  |
+        Base level:   100.0     |    97.9    |
+        Exon level:    99.0     |    92.9    |
+      Intron level:   100.0     |    94.6    |
+Intron chain level:   100.0     |    79.2    |
+  Transcript level:    99.8     |    83.5    |
+       Locus level:    99.8     |    98.6    |
+
+     Matching intron chains:   30127
+       Matching transcripts:   41529
+              Matching loci:   33295
+
+          Missed exons:       0/169264  (  0.0%)
+           Novel exons:    2325/181918  (  1.3%)
+        Missed introns:       0/127896  (  0.0%)
+         Novel introns:    2451/135134  (  1.8%)
+           Missed loci:       0/33350   (  0.0%)
+            Novel loci:     424/33302   (  1.3%)
+
+ Total union super-loci across all input datasets: 33302
+49714 out of 49714 consensus transcripts written in gffcompare.annotated.gtf (0 discarded as redundant)
+
+``` 
+Now lets go ahead and do the transcript quantification using stringtie.
+
+
+<h2 id="Sixth_Point_Header">Transcript quantification with StringTie</h2>
+
+In this step we will use the `stringtie_merged.gtf` file as reference and measure the expression of exons, transcripts and other features present in the gtf file.  The syntax of command we will be executing is,
+`stringtie -e -B -p 4 sample.bam -G stringtie_merged.gtf -o output.count -A gene_abundance.out`
+
+-B returns a Ballgown input table file
+-e only estimate the abundance of given reference transcripts
+-o output path/file name
+-A gene abundance estimation output file
+
+We can compose a script based on the above command to run all out samples.
+
+<pre style="color: silver; background: black;">                                                                                                          
+#!/bin/bash
+#SBATCH --job-name=stringtie
+#SBATCH --mail-user=
+#SBATCH --mail-type=ALL
+#SBATCH -n 1
+#SBATCH -N 1
+#SBATCH -c 4
+#SBATCH --mem=40G
+#SBATCH -o %x_%j.out
+#SBATCH -e %x_%j.err
+#SBATCH --partition=himem
+#SBATCH --qos=himem
+
+export TMPDIR=/home/CAM/$USER/tmp/
+
+mkdir -p {athaliana_wt_Rep1,athaliana_wt_Rep2,athaliana_wt_Rep3,athaliana_EE_Rep1,athaliana_EE_Rep2,athaliana_EE_Rep3}
+
+module load stringtie
+
+stringtie -e -B -p 4 ../mapping/wt_Rep1_sort.bam -G stringtie_merged.gtf -o athaliana_wt_Rep1/athaliana_wt_Rep1.count -A athaliana_wt_Rep1/wt_Rep1_gene_abun.out
+
+stringtie -e -B -p 4 ../mapping/wt_Rep2_sort.bam -G stringtie_merged.gtf -o athaliana_wt_Rep2/athaliana_wt_Rep2.count -A athaliana_wt_Rep2/wt_Rep2_gene_abun.out
+
+stringtie -e -B -p 4 ../mapping/wt_Rep3_sort.bam -G stringtie_merged.gtf -o athaliana_wt_Rep3/athaliana_wt_Rep3.count -A athaliana_wt_Rep3/wt_Rep3_gene_abun.out
+
+stringtie -e -B -p 4 ../mapping/EE_Rep1_sort.bam -G stringtie_merged.gtf -o athaliana_EE_Rep1/athaliana_EE_Rep1.count -A athaliana_EE_Rep1/EE_Rep1_gene_abun.out
+
+stringtie -e -B -p 4 ../mapping/EE_Rep2_sort.bam -G stringtie_merged.gtf -o athaliana_EE_Rep2/athaliana_EE_Rep2.count -A athaliana_EE_Rep2/EE_Rep2_gene_abun.out
+
+stringtie -e -B -p 4 ../mapping/EE_Rep3_sort.bam -G stringtie_merged.gtf -o athaliana_EE_Rep3/athaliana_EE_Rep3.count -A athaliana_EE_Rep3/EE_Rep3_gene_abun.out
 
 </pre>
 
@@ -707,19 +806,21 @@ i2t.ctab: table with two columns, i_id and t_id, denoting which introns belong t
 
 Let's have a look at the stringtie output .counts file which we will be using in ballgown:
 
-<pre style="color: silver; background: black;"># stringtie -e -B -p 8 /UCHC/LABS/CBC/Tutorials/model_arabidopsis//mapping/wt_Rep1_sort.bam -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o /UCHC/LABS/CBC/Tutorials/model_arabidopsis//counts/athaliana_wt_Rep1/athaliana_wt_Rep1.count -A /UCHC/LABS/CBC/Tutorials/model_arabidopsis//counts/athaliana_wt_Rep1/wt_Rep1_gene_abun.out
-# StringTie version 1.3.4d
-1       StringTie       transcript      3631    5899    1000    +       .       gene_id "AT1G01010"; transcript_id "AT1G01010.1"; ref_gene_name "AT1G01010"; cov "3.623815"; FPKM "1.882998"; TPM "2.287898";
-1       StringTie       exon    3631    3913    1000    +       .       gene_id "AT1G01010"; transcript_id "AT1G01010.1"; exon_number "1"; ref_gene_name "AT1G01010"; cov "2.756184";
-1       StringTie       exon    3996    4276    1000    +       .       gene_id "AT1G01010"; transcript_id "AT1G01010.1"; exon_number "2"; ref_gene_name "AT1G01010"; cov "4.473310";
-1       StringTie       exon    4486    4605    1000    +       .       gene_id "AT1G01010"; transcript_id "AT1G01010.1"; exon_number "3"; ref_gene_name "AT1G01010"; cov "2.566667";
-1       StringTie       exon    4706    5095    1000    +       .       gene_id "AT1G01010"; transcript_id "AT1G01010.1"; exon_number "4"; ref_gene_name "AT1G01010"; cov "2.882051";
-1       StringTie       exon    5174    5326    1000    +       .       gene_id "AT1G01010"; transcript_id "AT1G01010.1"; exon_number "5"; ref_gene_name "AT1G01010"; cov "7.189542";
-1       StringTie       exon    5439    5899    1000    +       .       gene_id "AT1G01010"; transcript_id "AT1G01010.1"; exon_number "6"; ref_gene_name "AT1G01010"; cov "3.357918";</pre>
+<pre style="color: silver; background: black;"># # stringtie -e -B -p 8 ../mapping/EE_Rep1_sort.bam -G stringtie_merged.gtf -o athaliana_EE_Rep1/athaliana_EE_Rep1.count -A athaliana_EE_Rep1/EE_Rep1_gene_abun.out
+# StringTie version 2.0.3
+1       StringTie       transcript      3631    5899    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; ref_gene_name "AT1G01010"; cov "2.338863"; FPKM "1.197653"; TPM "1.634538";
+1       StringTie       exon    3631    3913    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "1"; ref_gene_name "AT1G01010"; cov "3.505300";
+1       StringTie       exon    3996    4276    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "2"; ref_gene_name "AT1G01010"; cov "3.217082";
+1       StringTie       exon    4486    4605    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "3"; ref_gene_name "AT1G01010"; cov "0.866667";
+1       StringTie       exon    4706    5095    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "4"; ref_gene_name "AT1G01010"; cov "2.884615";
+1       StringTie       exon    5174    5326    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "5"; ref_gene_name "AT1G01010"; cov "2.980392";
+1       StringTie       exon    5439    5899    1000    +       .       gene_id "MSTRG.1"; transcript_id "AT1G01010.1"; exon_number "6"; ref_gene_name "AT1G01010"; cov "0.796095";
+1       StringTie       transcript      6908    8737    .       -       .       gene_id "MSTRG.3"; transcript_id "MSTRG.3.4"; cov "0.0"; FPKM "0.000000"; TPM "0.000000";
+1       StringTie       exon    6908    7069    .       -       .       gene_id "MSTRG.3"; transcript_id "MSTRG.3.4"; exon_number "1"; cov "0.0";</pre>
 
 <br>
 
-<h2 id="Sixth_Point_Header">Differential expression analysis using ballgown</h2>
+<h2 id="Seventh_Point_Header">Differential expression analysis using ballgown</h2>
 For many organisms, many of the same genes are expressed in separate cell types, with a variety of phenotype differences a result of the specific isoforms a cell will use. Therefore, when performing a differential expression analysis from different parts of one organism (not one species, but a singular organism), it is wise to perform an isoform expression analysis alongside a standard differential expression analysis and combine the results (as we are doing here). We will only be performing the isoform expresion analysis. <a href="https://bioconductor.org/packages/release/bioc/html/ballgown.html">Ballgown</a> is a differential expression package for R via Bioconductor ideal for isoform expression analyses. Before beginning, you need to secure copy our ballgown directory from Xanadu to your local machine:
 
 <pre style="color: silver; background: black;">-bash-4.2$ exit
@@ -732,8 +833,10 @@ To begin we must download and load the proper packages:
 
 <pre style="color: silver; background: black;">install.packages("devtools")
 install.packages("RFLPtools")
-source("http://www.bioconductor.org/biocLite.R")
-biocLite(c("alyssafrazee/RSkittleBrewer","ballgown", "genefilter", "dplyr", "devtools"))
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install(c("alyssafrazee/RSkittleBrewer","ballgown", "genefilter", "dplyr", "devtools"))
+
 
 library(ballgown)
 library(RSkittleBrewer)
@@ -787,7 +890,7 @@ Because of the structure of our ballgown directory, we may use dataDir = "ballgo
 We want all of the objects in our arguments to be in the same order as they are present in the ballgown directory. Therefore, we want our pData matrix to have two columns -- the first column being the samples as they appear in the ballgown directory, and the second being the phenotype of each sample in the column before it (root or shoot). Let's see the order of our sample files:
 
 <pre style="color: silver; background: black;">list.files("ballgown/")
-<strong>[1] "athaliana_mutant_Rep1" "athaliana_mutant_Rep2" "athaliana_mutant_Rep3"
+<strong>[1] "athaliana_EE_Rep1" "athaliana_EE_Rep2" "athaliana_EE_Rep3"
 [4] "athaliana_wt_Rep1"     "athaliana_wt_Rep2"     "athaliana_wt_Rep3" </strong></pre>
 
 Now we construct a 6x2 phenotype matrix with the first column being our samples in order and the second each sample's phenotype:
@@ -795,15 +898,15 @@ Now we construct a 6x2 phenotype matrix with the first column being our samples 
 <pre style="color: silver; background: black;">pheno_data = c("athaliana_root_1", "athaliana_root_2", "athaliana_shoot_1",  "athaliana_shoot_2","root","root","shoot","shoot")</pre>
 
 <pre style="color: silver; background: black;">
-sample<-c("athaliana_mutant_Rep1","athaliana_mutant_Rep2", "athaliana_mutant_Rep3", "athaliana_wt_Rep1", "athaliana_wt_Rep2", "athaliana_wt_Rep3" )
-type<-c(rep("mutant",3),rep("wt",3))
+sample<-c("athaliana_EE_Rep1","athaliana_EE_Rep2", "athaliana_EE_Rep3", "athaliana_wt_Rep1", "athaliana_wt_Rep2", "athaliana_wt_Rep3" )
+type<-c(rep("EE",3),rep("wt",3))
 pheno_df<-data.frame("sample"=sample,"type"=type)
 rownames(pheno_df)<-pheno_df[,1]
 pheno_df
 <strong>                                     sample   type
-athaliana_mutant_Rep1 athaliana_mutant_Rep1 mutant
-athaliana_mutant_Rep2 athaliana_mutant_Rep2 mutant
-athaliana_mutant_Rep3 athaliana_mutant_Rep3 mutant
+athaliana_EE_Rep1 athaliana_EE_Rep1 EE
+athaliana_EE_Rep2 athaliana_EE_Rep2 EE
+athaliana_EE_Rep3 athaliana_EE_Rep3 EE
 athaliana_wt_Rep1         athaliana_wt_Rep1     wt
 athaliana_wt_Rep2         athaliana_wt_Rep2     wt
 athaliana_wt_Rep3         athaliana_wt_Rep3     wt</strong></pre>
@@ -823,49 +926,19 @@ Thu May  2 22:33:56 2019: Merging transcript data
 Wrapping up the results
 Thu May  2 22:33:56 2019</strong>
 
-head(texpr(bg))
-
 </pre>
-We filter our ballgown object to take only genes with <a href="https://en.wikipedia.org/wiki/Variance">variances</a> above 1 
-using <a href="https://www.rdocumentation.org/packages/metaMA/versions/3.1.2/topics/rowVars">rowVars()</a>.
 
+The ballgown object `bg` stores the fpkm values corresponding to genes.  Before calculating the fold changes in gene expression we can explore the expression of genes across the samples.  We will create a `gene_expression`variable holding the fpkm value of genes and then plot a boxplot of fpkm values from all the samples.
 
-<pre style="color: silver; background: black;">??ballgown::subset</pre>
+<pre style="color: silver; background: black;">gene_expression = gexpr(bg) #extract fpkm values of genes
+head(gene_expression)
+boxplot(log10(gene_expression+1),names=c("EE1","EE2","EE3","WT1","WT2","WT3"),col=c("red", "red","red","blue", "blue","blue"))
+</pre>
+The boxplot below gives an overview of expression of fpkm values of different genes across different samples. We have log10 transformed the values to visualise it better and added 1 `gene_expression+1` to avoid errors if the fpkm values are 0.
 
-<pre>
-<strong style="color: blue;">subset ballgown objects to specific samples or genomic locations</strong>
+<img src="fpkm_box_plot.png"> </a><br>
 
-<strong style="color: grey;">Description</strong>
-
-<em style="color: green;">subset ballgown objects to specific samples or genomic locations</em>
-
-<strong style="color: grey;">Usage</strong>
-
-subset(x, ...)
-
-## S4 method for signature 'ballgown'
-subset(x, cond, genomesubset = TRUE)
-
-<strong style="color: grey;">Arguments</strong>
-
-x	
-a 		ballgown object
-...		further arguments to generic subset
-cond		Condition on which to subset. See details.
-genomesubset	if TRUE, subset x to a specific part of the genome. Otherwise, subset x to only include specific samples. TRUE by 
-		default.
-
-<strong style="color: grey;">Details</strong>
-
-To use subset, you must provide the cond argument as a string representing a logical expression specifying your desired subset. The subset expression can either involve column names of texpr(x, "all") (if genomesubset is TRUE) or of pData(x) (if genomesubset is FALSE). For example, if you wanted a ballgown object for only chromosome 22, you might call subset(x, "chr == 'chr22'"). (Be sure to handle quotes within character strings appropriately).</pre>
-
-<br>
-
-<pre style="color: silver; background: black;">bg_filtered=subset(bg, "rowVars(texpr(bg))>1")</pre>
-
-We follow the guide and subset our ballgown object under the condition that the row-variances of the expression data are greater than one, keeping the gene names.</pre>
-
-To perform the isoform differential expression analysis we use ballgown's "stattest" function. Let's have a look at it:
+To perform the differential expression analysis we use ballgown's "stattest" function. Let's have a look at it:
 <pre style="color: silver; background: black;">??ballgown::stattest</pre>
 
 <pre><strong style="color: blue;">statistical tests for differential expression in ballgown</strong>
@@ -921,456 +994,285 @@ libadjust	library-size adjustment to use in linear models. By default, the adjus
 log		if TRUE, outcome variable in linear models is log(expression+1), otherwise it's expression. Default TRUE.
 </pre>
 
-We see we can determine which transcripts and genes are differentially expressed in the roots or shoots, alongside the fold changes of
-each differentially expressed gene as measured in FPKM with the following code:
+We see we can determine which transcripts and genes are differentially expressed between the conditions, alongside the fold changes ofeach differentially expressed gene as measured in FPKM with the following code:
 
-<pre style="color: silver; background: black;">results_transcripts = stattest(bg_filtered, feature="transcript" , covariate = "type" , 
+<pre style="color: silver; background: black;">results_transcripts = stattest(bg, feature="transcript" , covariate = "type" , 
 getFC = TRUE, meas = "FPKM")
 
-results_genes = stattest(bg_filtered, feature="gene" , covariate = "type" , getFC = TRUE, meas = "FPKM")</pre>
+results_genes = stattest(bg, feature="gene" , covariate = "type" , getFC = TRUE, meas = "FPKM")</pre>
 
-Let's take a look at this object:
-
-<pre style="color: silver; background: black;">head(results_genes)
-<strong>   feature        id        fc        pval      qval
-1    gene AT1G01050 0.8216286 0.038409878 0.9996177
-2    gene AT1G01060 1.2906809 0.825960521 0.9996177
-3    gene AT1G01080 0.8156244 0.276868361 0.9996177
-4    gene AT1G01090 1.0838842 0.009539157 0.9996177
-5    gene AT1G01100 0.9755726 0.687152148 0.9996177
-6    gene AT1G01110 0.9522035 0.706397431 0.9996177</strong></pre>
-
-Each differentially expressed gene (or isoform) is listed, alongside its ID, fold-change (percent increase), <a href="https://en.wikipedia.org/wiki/P-value">p-value</a>, and <a href="http://www.statisticshowto.com/q-value/">q-value</a>.
-
-Now we want to order our results according to their p-value, and then subset to only take results with p-values below 0.01, writing our findings to a csv:
+Let's take a look at this object. The changes in expression in all genes is listed, alongside its ID, fold-change (percent increase), <a href="https://en.wikipedia.org/wiki/P-value">p-value</a>, and <a href="http://www.statisticshowto.com/q-value/">q-value</a>. It is a good idea to have foldchange (fc) log2 transformed as it is easy to understand the fold change values. A negative value will indicate downregulation and positive value as upregulation of genes between the conditions. 
 
 <pre style="color: silver; background: black;">
-results_genes = arrange(results_genes,pval)
-results_genes = subset(results_genes, pval < 0.01)
-results_transcripts = arrange(results_transcripts, pval)
-results_transcripts = subset(results_transcripts, pval < 0.01)
-write.csv(results_transcripts, "transcript_results.csv", row.names=FALSE)
-write.csv(results_genes, "results_genes.csv", row.names=FALSE)
+results_genes["log2fc"]<-log2(results_genes$fc)
+
+head(results_genes)
+
+  feature        id        fc       pval      qval      log2fc
+1    gene AT1G01010 0.8087079 0.38793773 0.9981114 -0.30630933
+2    gene AT1G01020 0.9421945 0.64827785 0.9981114 -0.08590316
+3    gene AT1G01030 0.8025982 0.31221966 0.9981114 -0.31725025
+4    gene AT1G01040 1.0508155 0.78611712 0.9981114  0.07150939
+5    gene AT1G01046 2.0228448 0.07153084 0.9981114  1.01638560
+6    gene AT1G01050 0.7928742 0.01064636 0.9981114 -0.33483603
+
+</pre>
+Now lets filter differential expression result based on p-value and fold change. For this study we will consider genes with p<0.1 and showing more than 1.5 fold changes in expression as gene of interest to us. On log2 scale this is 0.584 `log2(1.5)=0.584`.  So any gene with p<0.1 and log2fc less than -0.584 and more than 0.584 are significant.  We will write this result to a `.csv` file for our records.
+
+<pre style="color: silver; background: black;">
+
+g_sign<-subset(results_genes,pval<0.1 & abs(logfc)>0.584)
+head(g_sign)
+    feature        id        fc       pval      qval     log2fc
+5      gene AT1G01046 2.0228448 0.07153084 0.9981114  1.0163856
+152    gene AT1G02360 0.6305038 0.08680302 0.9981114 -0.6654230
+171    gene AT1G02520 1.6764465 0.09136064 0.9981114  0.7454064
+205    gene AT1G02820 0.3489204 0.02106810 0.9981114 -1.5190299
+234    gene AT1G03070 1.5210633 0.09282004 0.9981114  0.6050802
+331    gene AT1G03935 0.5610848 0.03224290 0.9981114 -0.8337093
+
+
+&#35;&#35; Number of genes differentialy expressed.
+dim(g_sign)
+[1] 388   6
+
+write.csv(g_sign, "results_genes.csv", row.names=FALSE)
 
 &#35;&#35;we use row.names=FALSE because currently the row names are just the numbers 1, 2, 3. . .
 </pre>
 
-Now we want to visualize our data:
-We want to compare our genes based on their FPKM values. We know from reading ballgown's vignette that we can extract the 
-expression data using texpr() and specifying a measure. 
+So we have 388 genes which shows differential expression across our sample conditions.  
+
+AT this point we can perform principal component analysis of our dataset using the 388genes and this will address two points
+(1) Whats the degree of reproducibility across our biological replicates?
+(2) To what extent the 388 genes explains the variance in our sample condition?
+
+In order to achieve this we have to extract the fpkm values corresponding to the 388 genes from the `gene_expression` object holding fpkm values of all the detected genes.
 
 <pre style="color: silver; background: black;">
-fpkm = texpr(bg, meas = "FPKM")
-&#35;&#35;let's look at the distribution
-plot(density(fpkm[,1]),typr="l",main="Density Plot of \nUntransformed FPKM",col="blue")
-lines(density(fpkm[,2]),col="red")
-lines(density(fpkm[,3]),col="green")
-lines(density(fpkm[,4]),col="dodgerblue")
-lines(density(fpkm[,5]),col="pink")
-lines(density(fpkm[,6]),col="limegreen")
+&#35;&#35; Subset genes from gene_expression whose gene ID is present in g_sign
+sig_gene_fpkm=gene_expression[rownames(gene_expression) %in% g_sign$id,]
+
+&#35;&#35; Reassign column names
+colnames(sig_gene_fpkm)<-c("EE1","EE2","EE3","WT1","WT2","WT3")
+head(sig_gene_fpkm)
+                EE1        EE2        EE3      WT1      WT2      WT3
+AT1G01046  0.0000000  0.4551480  0.4800380 0.422412 2.445734 0.000000
+AT1G02360  1.3315690  0.4625370  0.8413550 0.150970 0.200799 0.238993
+AT1G02520  6.0268930  3.1223790  4.4537800 7.969385 8.486231 8.237259
+AT1G02820 18.0663470 10.2200270 14.4798820 4.727195 3.801382 6.377376
+AT1G03070  0.5091674  0.9138772  0.3889898 1.162226 1.441914 1.891146
+AT1G03935  5.1024750  6.5259790  6.2669260 3.841783 2.644548 2.658530
+
+dim(sig_gene_fpkm)
+[1] 388   6
+&#35;&#35; Our selected dataset has 388 genes same as that were in g_sign
 </pre>
-<img src="Rplot.png">
-We can see virtually nothing except that there are many, many genes that are lowly expressed. The reason for the sharp peak 
-is that the density plot automatically scales its x-axis from the lowest expressed to the highest expressed. Let's see what 
-those values are:
+
+Now the next set of commands is to compute PCA and plot it. We will generate 2 plots
+(1) Bargraph showing % of variance explained by each PC.
+(2) PCA plot itself using PC1 and PC2.
 
 <pre style="color: silver; background: black;">
-min(fpkm)
-<strong>0</strong>
-max(fpkm)
-<strong>13386.3</strong>
+&#35;&#35; Command below calculate all the PC of the data
+pc<-prcomp(t(sig_gene_fpkm),scale=TRUE)
+
+&#35;&#35; Here we are estimating the varaiance contributed by each component.
+pcpcnt<-round(100*pc$sdev^2/sum(pc$sdev^2),1)
+names(pcpcnt)<-c("PC1","PC2","PC3","PC4","PC5","PC6")
+barplot(pcpcnt,ylim=c(0,100))
+pcpcnt
+PC1  PC2  PC3  PC4  PC5  PC6 
+68.8 13.1  7.0  5.7  5.4  0.0 
 </pre>
-Due to the scaling, we cannot truly see the distribution. However, what we <i>can</i> do is to transform the data such that the variance is not so staggering, allowing us to see better. There are a few rules for this, all of the data must be transformed in a consistent and reversible manner, after transformation no data may have a negative value, and all data with a value of 0 must also be 0 after transformation. The reason for the second and third rules is more epistemological. For us, if a gene has an FPKM of 0, then for that sample the gene is unexpressed. Should we transform the data and that particular gene's FPKM is now above 0, we are fundamentally changing the nature of that sample -- i.e., we are now saying it is expresesing a gene it actually is not! Additionally, there is no such thing as negative expression, so there is no physical reality where we will have an FPKM beneath 0. With these three rules, we see that taking the log of all our data will prevent negative values, be consistent and reversible, and scale down our variance. However, log(0) =  Inf! We have broken a cardinal rule (oddly enough, the fact that it is  Infinity is not a rule-breaker, but rather that it is <b>negative</b>  Infinity! Seeing this, we can simply add 1 to our data before log transforming, log(0+1) = 0. Now we have fulfilled all three rules.
+Around 68.8% of the variance in the data can be explained by genes in our geneset.  Which is pretty good.
 
+<img src="PC_variance_plot.png" >
+
+
+
+Now the next set of codes below plots a PCA plot.  Please donot get baffeled by the code. As you keep getting experienced with coding this all will start to make sense. :-)
 <pre style="color: silver; background: black;">
-fpkm = log2(fpkm + 1)
-head(fpkm)
-plot(density(fpkm[,1]),type="l",main="Density Comparison",col="red")
-lines(density(fpkm[,2]),col="blue")
-lines(density(fpkm[,3]),col="green")
-lines(density(fpkm[,4]),col="red")
-lines(density(fpkm[,5]),col="blue")
-lines(density(fpkm[,6]),col="green")</pre>
-
-We now we see an actual distribution. Let's see the difference in distribution between each individual part. To do this we are going to plot the density for each part, one by one, and watch for great changes.
-
-<img src=Rplot01.png></a><br>
-
-Now we will generate a <a href="http://setosa.io/ev/principal-component-analysis/">PCA</a> plot. I strongly advise you read the PCA link before continuing if you are not familiar with Principal Component Analysis. It will not be explained in this tutorial.
-
-Let's create a vector with our PCA point names
-<pre style="color: silver; background: black;">
-short_names = c("mu1","mu2","mu3","wt1","wt2","wt3")</pre>
-We are going to be using the <a href="https://en.wikipedia.org/wiki/Pearson_correlation_coefficient">Pearson coefficient</a> for our PCA plot. You may think of the Pearson coefficient simply as a measure of similarity. If two datasets are very similar, they will have a Pearson coefficient approaching 1 (every data compared to itself has a Pearson coefficient of 1). If two datasets are very dissimilar, they will have a Pearson coefficient approaching 0 Let's calculate a vector containing the correlation coefficient:
-
-<pre style="color: silver; background: black;">
-r = cor(fpkm, use="pairwise.complete.obs", method="pearson")</pre>
-Let's have a look at r:
-
-<pre style="color: silver; background: black;">
-r
-
-<strong style="color:blue;">                           FPKM.athaliana_mutant_Rep1 FPKM.athaliana_mutant_Rep2 FPKM.athaliana_mutant_Rep3 FPKM.athaliana_wt_Rep1 FPKM.athaliana_wt_Rep2 FPKM.athaliana_wt_Rep3
-FPKM.athaliana_mutant_Rep1                  1.0000000                  0.9689147                  0.9701448              0.9617423              0.9738848              0.9716859
-FPKM.athaliana_mutant_Rep2                  0.9689147                  1.0000000                  0.9713023              0.9659690              0.9676161              0.9644472
-FPKM.athaliana_mutant_Rep3                  0.9701448                  0.9713023                  1.0000000              0.9668139              0.9684712              0.9649888
-FPKM.athaliana_wt_Rep1                      0.9617423                  0.9659690                  0.9668139              1.0000000              0.9606613              0.9631253
-FPKM.athaliana_wt_Rep2                      0.9738848                  0.9676161                  0.9684712              0.9606613              1.0000000              0.9733014
-FPKM.athaliana_wt_Rep3                      0.9716859                  0.9644472                  0.9649888              0.9631253              0.9733014              1.0000000</strong>
-
-</pre>
-Here we see each member of the diagonal is 1.000000. Of course we knew this already, as each member is 100% similar to itself! Then we have the similarity measures of each sample to each other sample.
-
-Rather than calculate the similarity, it would be nicer to calculate the dissimilarity or distance between each sample. We know that if two samples are the same, their similarity measure is 1.000000. We also know that then their dissimilarity is 0%, or 0.000000. Here we see that if we subtract each element from 1, we get the dissimilarity matrix! Let's do it:
-
-<pre style="color: silver; background: black;">
-d = 1 - r
-d
-<strong style="color:blue;">
-                           FPKM.athaliana_mutant_Rep1 FPKM.athaliana_mutant_Rep2 FPKM.athaliana_mutant_Rep3 FPKM.athaliana_wt_Rep1 FPKM.athaliana_wt_Rep2 FPKM.athaliana_wt_Rep3
-FPKM.athaliana_mutant_Rep1                 0.00000000                 0.03108533                 0.02985520             0.03825768             0.02611516             0.02831408
-FPKM.athaliana_mutant_Rep2                 0.03108533                 0.00000000                 0.02869768             0.03403101             0.03238395             0.03555277
-FPKM.athaliana_mutant_Rep3                 0.02985520                 0.02869768                 0.00000000             0.03318614             0.03152878             0.03501125
-FPKM.athaliana_wt_Rep1                     0.03825768                 0.03403101                 0.03318614             0.00000000             0.03933872             0.03687471
-FPKM.athaliana_wt_Rep2                     0.02611516                 0.03238395                 0.03152878             0.03933872             0.00000000             0.02669858
-FPKM.athaliana_wt_Rep3                     0.02831408                 0.03555277                 0.03501125             0.03687471             0.02669858             0.00000000</strong>
-</pre>
-R has a function which will perform the principal component analysis for us when provided with a dissimilarity matrix, cmdscale. Let's have a look at it:
-
-<pre style="color: silver; background: black;">
-help(cmdscale)</pre>
-
-<pre style="color: silver; background: black;"><strong>Classical (Metric) Multidimensional Scaling</strong>
-
-<strong style="color: grey;">Description</strong>
-
-<em style="color: green;">Classical multidimensional scaling (MDS) of a data matrix. Also known as principal coordinates analysis (Gower, 1966).</em>
-
-<strong style="color: grey;">Usage</strong>
-
-cmdscale(d, k = 2, eig = FALSE, add = FALSE, x.ret = FALSE,
-         list. = eig || add || x.ret)
-<strong style=color: green;">Arguments</strong>
-
-d	a distance structure such as that returned by dist or a full symmetric matrix containing the dissimilarities.
-k	the maximum dimension of the space which the data are to be represented in; must be in {1, 2, …, n-1}.
-eig	indicates whether eigenvalues should be returned.
-add	logical indicating if an additive constant c* should be computed, and added to the non-diagonal dissimilarities such that the 
-	modified dissimilarities are Euclidean.
-x.ret	indicates whether the doubly centred symmetric distance matrix should be returned.
-list.	logical indicating if a list should be returned or just the n * k matrix, see ‘Value:’.
-
-<strong style="color:grey;">Details</strong>
-
-Multidimensional scaling takes a set of dissimilarities and returns a set of points such that the distances between the points are approximately equal to the dissimilarities. (It is a major part of what ecologists call ‘ordination’.)
-
-A set of Euclidean distances on n points can be represented exactly in at most n - 1 dimensions. cmdscale follows the analysis of Mardia (1978), and returns the best-fitting k-dimensional representation, where k may be less than the argument k.
-
-The representation is only determined up to location (cmdscale takes the column means of the configuration to be at the origin), rotations and reflections. The configuration returned is given in principal-component axes, so the reflection chosen may differ between R platforms (see prcomp).
-
-When add = TRUE, a minimal additive constant c* is computed such that the dissimilarities d[i,j] + c* are Euclidean and hence can be represented in n - 1 dimensions. Whereas S (Becker et al, 1988) computes this constant using an approximation suggested by Torgerson, R uses the analytical solution of Cailliez (1983), see also Cox and Cox (2001). Note that because of numerical errors the computed eigenvalues need not all be non-negative, and even theoretically the representation could be in fewer than n - 1 dimensions.</pre>
-
-Let's perform our principal component analysis:
-
-<pre style="color: silver; background: black;">pca = cmdscale(d, k=2)</pre>
-We expect pca to have four rows, each row corresponding to a sample, and two columns, the first column representing our first coordinate axis and the second dimension representing our second coordinate axis. If we plot the first column against the second column, the distances between points is the dissimilarity between points.
-
-<pre style="color: silver; background: black;">
-pca
-
-<strong style="color:blue;">                                   [,1]          [,2]
-FPKM.athaliana_mutant_Rep1  0.010188699  0.0037862309
-FPKM.athaliana_mutant_Rep2 -0.007391951  0.0125768089
-FPKM.athaliana_mutant_Rep3 -0.006736291  0.0104882107
-FPKM.athaliana_wt_Rep1     -0.021280708 -0.0133394678
-FPKM.athaliana_wt_Rep2      0.013442569  0.0001839026
-FPKM.athaliana_wt_Rep3      0.011777681 -0.0136956852</strong>
-
-</pre>
-For this next step it is assumed that you are familiar with plotting in R. If not you may look <a href="https://bio Informatics.uconn.edu/introduction-to-r/">here</a>.
-
-<pre style="color: silver; background: black;">
-plot.new()
-par(mfrow=c(1,1))
-##point colors
 point_colors = c("red", "red","red","blue", "blue", "blue")
-plot(pca[,1],pca[,2], xlab="", ylab="", main="PCA plot for all libraries", xlim=c(-0.025,0.02), ylim=c(-0.05,0.05),col=point_colors)
-text(pca[,1],pca[,2],pos=2,short_names, col=c("red", "red","red","blue", "blue", "blue"))</pre>
-<img src="pcaplot_for_all_libraries.png">
+plot(pc$x[,1],pc$x[,2], xlab="", ylab="", main="PCA plot for all libraries",xlim=c(min(pc$x[,1])-2,max(pc$x[,1])+2),ylim=c(min(pc$x[,2])-2,max(pc$x[,2])+2),col=point_colors)
+text(pc$x[,1],pc$x[,2],pos=2,rownames(pc$x), col=c("red", "red","red","blue", "blue", "blue"))
 
+</pre>
 
-We should take advantage while we have this results_genes object and annotate the genes we have deemed significant (p-values below 0.01, every gene now in this object). To annotate the genes we will be using <a href="https://www.bioconductor.org/packages/devel/bioc/html/biomaRt.html">biomaRt</a> and biomartr. You can install these with the following code:
+As wecan see that the PC1 explains around 70% variance and also seperates the samples based on the conditions, i.e. WT and ectopic expression samples (Visualise dropping samples on x-axis).  This means that 70% of the variance in the samples can be explained by the sample conditions.
+<img src="PCAplot_for_all_libraries.png" >
+
+<h2 id="Eighth_Point_Header">Gene annotation with BiomaRt</h2>
+
+In this section we will aim to perform a functional annotation of differentially expressed genes identified in our analysis.  These genes are stored in `g_sign` object and we will use  `biomart` tool available on public databases to extract information using a R packages.  The functionalities demonstrated below are applicable to most public domain databases provided they support Biomart. Before getting into `R studio` lets understand few key features of Ensembl database, the one we will be using for our annotation. It is important to develop an understanding about databases as this will help in extracting data from correct database.  Ensembl has 6 different sub domains
+1. Bacteria	:  bacteria.ensembl.org
+2. Fungi	:  fungi.ensembl.org
+3. Metazoa	: metazoan.ensembl.org
+4. Plants	: plants.ensembl.org
+5. Protists	: protists.ensembl.org
+6. Vertebrates	:ensembl.org
+
+In order to get data we have to link to appropriate database.  In our case we will be using `plants.ensembl.org`.  
+
+Now let’s get some details on the R package `biomaRt`.  There are 3 main functions that are associated with this package are
+1. listFilters 		: Lists the available filters
+2. listAttributes	: Lists the available attributes
+3. getBM		: Performs the actual query and returns a data.frame
+
+While using `biomaRt` we have to make following choices
+1. Database referred as host (for us it is plants.ensembl.org)
+2. Biomart 
+3. dataset
+4. filters (e.g. chromosome, scaffold,Gene  type, Transcript type, phenotype etc)
+5. Attributes (This reflect the attributes of the filter we are interested in e.g, Gene stable ID, Gene start, Gene end, GO terms, protein domain and families etc )
+
+Lets begin, and first we want to identify which Biomart to use from plants.ensembl.org
+
 <pre style="color: silver; background: black;">
-## try http:// if https:// URLs are not supported
-source("https://bioconductor.org/biocLite.R")
-biocLite("biomaRt")
-install.packages("biomartr")</pre>
+BiocManager::install(c("biomaRt"))
+install.packages("biomartr")
 
-The first step in annotating our genes of interest is to choose our database. We do this using the "useMart" function of biomaRt:
-<pre style="color: silver; background: black;">library(biomaRt)
-library(biomartr)
-??biomaRt::useMart
+library(biomaRt) 
+listMarts(host="plants.ensembl.org")
 
-useMart {biomaRt}	R Documentation
-Connects to the selected BioMart database and dataset
+            biomart                      version
+1       plants_mart      Ensembl Plants Genes 45
+2 plants_variations Ensembl Plants Variations 45
 
-<strong>Description</strong>
+&#35;&#35; we would like to use the "Ensembl Plants Genes 45" as we are interested in gene information 
+&#35;&#35; so the mart of choice is “plants_mart”
+&#35;&#35; Next lets get all the datasets that are associated with Arabidopsis thaliana from “plants_mart”
 
-<em>A first step in using the biomaRt package is to select a BioMart database and dataset to use. The useMart function enables one to connect to a specified BioMart database and dataset within this database. To know which BioMart databases are available see the listMarts function. To know which datasets are available within a BioMart database, first select the BioMart database using useMart and then use the listDatasets function on the selected BioMart, see listDatasets function.</em>
+mart=useMart("plants_mart", host="plants.ensembl.org")
+head(listDatasets(mart))[grep("thaliana",listDatasets(mart)[,1]),]
 
-<strong>Usage</strong>
+           dataset                         description version
+5 athaliana_eg_gene Arabidopsis thaliana genes (TAIR10)  TAIR10
 
-useMart(biomart, dataset, host="www.ensembl.org",
-path="/biomart/martservice", port=80, archive=FALSE, ssl.verifypeer =
-TRUE, ensemblRedirect = NULL, version, verbose = FALSE)
-<strong>Arguments</strong>
+&#35;&#35; There is one dataset"athaliana_eg_gene” holding information about Arabidopsis genes.
+&#35;&#35; Now we need to identify filters and then the attributes before we extract the data.
 
-biomart		BioMart database name you want to connect to. Possible database names can be retrieved with the functio listMarts
-dataset		Dataset you want to use. To see the different datasets available within a biomaRt you can e.g. do: mart = 
-		useMart('ensembl'), followed by listDatasets(mart).
-host		Host to connect to. Defaults to www.ensembl.org
-path		Path that should be pasted after to host to get access to the web service URL
-port		port to connect to, will be pasted between host and path 
-archive		Boolean to indicate if you want to access archived versions of BioMart databases. Note that this argument is now 
-		deprecated and will be removed in the future. A better alternative is to leave archive = FALSE and to specify the url 
-		of the archived BioMart you want to access. For Ensembl you can view the list of archives using listEnsemblArchives
-ssl.verifypeer	Set SSL peer verification on or off. By default ssl.verifypeer is set to TRUE
-ensemblRedirect	This argument has now been deprecated.
-version		Use version name instead of biomart name to specify which BioMart you want to use
-verbose		Give detailed output of what the method is doing while in use, for debugging</pre>
+&#35;&#35; To get information on filters you can try the command below. 
+&#35;&#35; This will list out 206 filters with their name and description. We have to make a selection of filter from there
+listFilters(thale_mart)
 
-A quick google search will show that the genome we used, TAIR10, is the Ensembl format of the thale cress. We are going to want to use the gene dataset. Let's verify that it is there following the instructions provided:
-<pre style="color: silver; background: black;">mart = useMart("ensembl")
- head(listDatasets(mart))
-<strong>                       dataset                           description     version
-1 abrachyrhynchus_gene_ensembl Pink-footed goose genes (ASM259213v1) ASM259213v1
-2     acalliptera_gene_ensembl      Eastern happy genes (fAstCal1.2)  fAstCal1.2
-3   acarolinensis_gene_ensembl        Anole lizard genes (AnoCar2.0)   AnoCar2.0
-4    acitrinellus_gene_ensembl        Midas cichlid genes (Midas_v5)    Midas_v5
-5        ahaastii_gene_ensembl    Great spotted kiwi genes (aptHaa1)     aptHaa1
-6    amelanoleuca_gene_ensembl                 Panda genes (ailMel1)     ailMel1</strong></pre>
+&#35;&#35; to view first 20 filters in the list
+head(listFilters(thale_mart),20)
 
-We want to scan this for the thale cress. But first, let's make sure we can scan it, period:
+&#35;&#35; we know that our gene list has Ensembl gene ids so lets check for filters having ‘ensembl’ key word in them
+listFilters(thale_mart)[grep("ensembl",listFilters(thale_mart)[,1]),]
+                    name                                description
+34       ensembl_gene_id         Gene stable ID(s) [e.g. AT1G01010]
+35 ensembl_transcript_id Transcript stable ID(s) [e.g. AT1G01010.1]
+36    ensembl_peptide_id    Protein stable ID(s) [e.g. AT1G01010.1]
+37       ensembl_exon_id        Exon ID(s) [e.g. AT1G01010.1.exon1]
 
-<pre style="color: silver; background: black;">listDatasets(mart)[grep("ahaastii",listDatasets(mart)[,1]),]
-<strong>                dataset                        description version
-5 ahaastii_gene_ensembl Great spotted kiwi genes (aptHaa1) aptHaa1</strong></pre>
+&#35;&#35; Great so have to use ‘ ensembl_gene_id’ as filter, Now we have to find attributes corresponding to ensembl_gene_id .
+&#35;&#35; Please note that the attributes are sometimes located on different pages , 
+&#35;&#35; so our first goal is to find the page using searchAttributes(mart, pattern) function
+&#35;&#35; and then the attributes of that page using listAttributes(mart, page,what = c("name","description","page"))
 
-We subset the listDatasets(mart) dataframe to include all rows which have the substring "amelanoleuca" in them. The return is row 2, which we can easily verify matches the head of the dataframe. Now let's try it with our species, "thaliana":
-<pre style="color: silver; background: black;">listDatasets(mart)[grep("thaliana",listDatasets(mart)[,1]),]
-<strong>[1] dataset     description version    
-<0 rows> (or 0-length row.names)</strong></pre>
+searchAttributes(mart = thale_mart, pattern = "ensembl_gene_id")
+                name    description         page
+1    ensembl_gene_id Gene stable ID feature_page
+134  ensembl_gene_id Gene stable ID    structure
+168  ensembl_gene_id Gene stable ID     homologs
+1251 ensembl_gene_id Gene stable ID          snp
+1303 ensembl_gene_id Gene stable ID    sequences
 
-There is no match. The reason for this is that biomaRt defaults to animal model organisms! We need to access the plant database. Now let's try:
-<pre style="color: silver; background: black;">listMarts(host="plants.ensembl.org")
-<strong>            biomart                      version
-1       plants_mart      Ensembl Plants Genes 43
-2 plants_variations Ensembl Plants Variations 43</strong>
+listAttributes(mart = thale_mart, page="feature_page")
 
-##if you are confused by the use of the listMarts function, read the useMart guide above!
+&#35;&#35; This will list 133 attributes applicable to the page
+1        ensembl_gene_id           Gene stable ID feature_page
+2  ensembl_transcript_id     Transcript stable ID feature_page
+3     ensembl_peptide_id        Protein stable ID feature_page
+4        ensembl_exon_id           Exon stable ID feature_page
+5            description         Gene description feature_page
+6        chromosome_name Chromosome/scaffold name feature_page
+7         start_position          Gene start (bp) feature_page
+8           end_position            Gene end (bp) feature_page
+9                 strand                   Strand feature_page
+10                  band           Karyotype band feature_page
 
-mart = useMart("plants_mart", host="plants.ensembl.org")
-head(listDatasets(mart))
-<strong>              dataset                                      description         version
-1  achinensis_eg_gene Actinidia chinensis Red5 genes (Red5_PS1_1.69.0) Red5_PS1_1.69.0
-2    ahalleri_eg_gene              Arabidopsis halleri genes (Ahal2.2)         Ahal2.2
-3     alyrata_eg_gene                 Arabidopsis lyrata genes (v.1.0)           v.1.0
-4   atauschii_eg_gene               Aegilops tauschii genes (Aet v4.0)        Aet v4.0
-5   athaliana_eg_gene              Arabidopsis thaliana genes (TAIR10)          TAIR10
-6 atrichopoda_eg_gene             Amborella trichopoda genes (AMTR1.0)         AMTR1.0</strong>
+&#35;&#35; we can see that the most relevant information could be “description”. So lets extract the information.
+&#35;&#35; You can explore more in the attributes and can choose as many as attributes you want.
+&#35;&#35; general syntax would be for first 5 attributes
+&#35;&#35; getBM(attributes=c("ensembl_gene_id”,”ensembl_transcript_id”,”ensembl_peptide_id”,"ensembl_exon_id" ,”description"),mart=thale_mart)
+&#35;&#35; here we are picking description and GO term for the gene
 
-##we see the thale cress as row 3! now we may choose our dataset:
-
-thale_mart = useMart("plants_mart",host="plants.ensembl.org",dataset="athaliana_eg_gene")
-head(thale_mart)
-<strong>Error in x[seq_len(n)] : object of type 'S4' is not subsettable</strong></pre>
-
-Our mart is in the <a href="http://adv-r.had.co.nz/S4.html">S4</a> class and not readable right now. We can process it by using the "getBM" function:
-<pre style="color: silver; background: black;">??biomaRt::getBM
-
-Retrieves  Information from the BioMart database
-
-<strong>Description</strong>
-
-<em>This function is the main biomaRt query function. Given a set of filters and corresponding values, it retrieves the user specified attributes from the BioMart database one is connected to.</em>
-
-<strong>Usage</strong>
-
-getBM(attributes, filters = "", values = "", mart, curl = NULL, 
-checkFilters = TRUE, verbose = FALSE, uniqueRows = TRUE, bmHeader = FALSE,
-quote = "\"")
-<strong>Arguments</strong>
-
-attributes	Attributes you want to retrieve. A possible list of attributes can be retrieved using the function listAttributes.
-filters		Filters (one or more) that should be used in the query. A possible list of filters can be retrieved using the function 
-		listFilters.
-values		Values of the filter, e.g. vector of affy IDs. If multiple filters are specified then the argument should be a list of 
-		vectors of which the position of each vector corresponds to the position of the filters in the filters argument.
-mart		object of class Mart, created with the useMart function.
-curl		An optional 'CURLHandle' object, that can be used to speed up getBM when used in a loop.
-checkFilters	Sometimes attributes where a value needs to be specified, for example upstream\_flank with value 20 for obtaining 
-		upstream sequence flank regions of length 20bp, are treated as filters in BioMarts. To enable such a query to work, one 
-		must specify the attribute as a filter and set checkFilters = FALSE for the query to work.
-verbose		When using biomaRt in webservice mode and setting verbose to TRUE, the XML query to the webservice will be printed.
-uniqueRows	If the result of a query contains multiple identical rows, setting this argument to TRUE (default) will result in 
-		deleting the duplicated rows in the query result at the server side.
-bmHeader	Boolean to indicate if the result retrieved from the BioMart server should include the data headers or not, defaults to 
-		FALSE. This should only be switched on if the default behavior results in errors, setting to on might still be able to 
-		retrieve your data in that case
-quote		Sometimes parsing of the results fails due to errors in the Ensembl data fields such as containing a quote, in such 
-		cases you can try to change the value of quote to try to still parse the results.
-
-<strong>Value</strong>
-
-A data.frame. There is no implicit mapping between its rows and the function arguments (e.g. filters, values), therefore make sure to have the relevant identifier(s) returned by specifying them in attributes. See Examples.</pre>
-
-Let's find out the attributes and filters by following the instructions in the vignette:
-<pre style="color: silver; background: black;">dim(listAttributes(thale_mart))
-<strong>[1] 1212    3</strong>
-
-##1118 attributes is too many for us to look through. They are ordered somewhat in prevalence of use.
-
-##let's look at the most commonly used attributes and see if they'll work for us
-
-head(listAttributes(thale_mart))
-<strong>                   name              description         page
-1       ensembl_gene_id           Gene stable ID feature_page
-2 ensembl_transcript_id     Transcript stable ID feature_page
-3    ensembl_peptide_id        Protein stable ID feature_page
-4       ensembl_exon_id           Exon stable ID feature_page
-5           description         Gene description feature_page
-6       chromosome_name Chromosome/scaffold name feature_page</strong>
-
-##we don't know the chromosome name, so we can just take attributes 1,3, and 5
-
-thale_data_frame = getBM(attributes=c("ensembl_gene_id","ensembl_peptide_id","description"),mart=thale_mart)
+thale_data_frame = getBM(attributes=c("ensembl_gene_id","description","name_1006"),mart=thale_mart)
 head(thale_data_frame)
-<strong>
-  ensembl_gene_id ensembl_peptide_id                              description
-1       AT3G11415                                                            
-2       AT1G31258                       other RNA [Source:TAIR;Acc:AT1G31258]
-3       AT5G24735                       other RNA [Source:TAIR;Acc:AT5G24735]
-4       AT2G45780                       other RNA [Source:TAIR;Acc:AT2G45780]
-5       AT2G42425                    Unknown gene [Source:TAIR;Acc:AT2G42425]
-6       AT4G01533                       other RNA [Source:TAIR;Acc:AT4G01533]</pre></strong>
+  ensembl_gene_id                              description name_1006
+1       AT3G11415                                                   
+2       AT1G31258    other RNA [Source:TAIR;Acc:AT1G31258]          
+3       AT5G24735    other RNA [Source:TAIR;Acc:AT5G24735]          
+4       AT2G45780    other RNA [Source:TAIR;Acc:AT2G45780]          
+5       AT2G42425 Unknown gene [Source:TAIR;Acc:AT2G42425]          
+6       AT4G01533    other RNA [Source:TAIR;Acc:AT4G01533]          
+tail(thale_data_frame)
+       ensembl_gene_id                                                                                  description
+208287       AT5G16970  NADPH-dependent oxidoreductase 2-alkenal reductase [Source:UniProtKB/Swiss-Prot;Acc:Q39172]
+208288       AT5G16970  NADPH-dependent oxidoreductase 2-alkenal reductase [Source:UniProtKB/Swiss-Prot;Acc:Q39172]
+208289       AT5G16970  NADPH-dependent oxidoreductase 2-alkenal reductase [Source:UniProtKB/Swiss-Prot;Acc:Q39172]
+208290       AT4G32100 Beta-1,3-N-Acetylglucosaminyltransferase family protein [Source:UniProtKB/TrEMBL;Acc:F4JTI5]
+208291       AT4G32100 Beta-1,3-N-Acetylglucosaminyltransferase family protein [Source:UniProtKB/TrEMBL;Acc:F4JTI5]
+208292       AT4G32100 Beta-1,3-N-Acetylglucosaminyltransferase family protein [Source:UniProtKB/TrEMBL;Acc:F4JTI5]
+                                                name_1006
+208287                                            plastid
+208288                                          cytoplasm
+208289                       response to oxidative stress
+208290                            cell fate determination
+208291 transferase activity, transferring glycosyl groups
+208292                               transferase activity
 
-The default descriptions are certainly underwhelming. Let's see if there are any other types of descriptions we can get:
+ 
+&#35;&#35; Now match the genes from our list to this dataset.
+annotated_genes = subset(thale_data_frame, ensembl_gene_id %in% g_sign$id)
+dim(g_sign)
+[1] 388   6
+> dim(annotated_genes )
+[1] 2378    3
 
-<pre style="color: silver; background: black;">listAttributes(thale_mart)[grep("descr",listAttributes(thale_mart)[,1]),]
-<strong>                           name                description         page
-5                   description           Gene description feature_page
-34       goslim_goa_description     GOSlim GOA Description feature_page
-113  interpro_short_description Interpro Short Description feature_page
-114        interpro_description       Interpro Description feature_page
-151                 description           Gene description    structure
-178                 description           Gene description     homologs
-1133                description           Gene description          snp
-1136         source_description Variant source description          snp
-1174                description           Gene description    sequences</strong></pre>
+> head(annotated_genes)
+    ensembl_gene_id                                       description name_1006
+61        AT5G22788             other RNA [Source:TAIR;Acc:AT5G22788]          
+90        AT5G38005             other RNA [Source:TAIR;Acc:AT5G38005]          
+109       AT1G21529                                                            
+182       AT2G07042             other RNA [Source:TAIR;Acc:AT2G07042]          
+220       AT2G05995             other RNA [Source:TAIR;Acc:AT2G05995]          
+588       AT2G46685 MIR166/MIR166A; miRNA [Source:TAIR;Acc:AT2G46685]          
+> tail(annotated_genes)
+       ensembl_gene_id
+207261       AT1G24575
+207262       AT1G24575
+208133       AT4G26490
+208134       AT4G26490
+208135       AT4G26490
+208136       AT4G26490
+                                                                                                          description
+207261                                                                 At1g24575 [Source:UniProtKB/TrEMBL;Acc:Q8LAL6]
+207262                                                                 At1g24575 [Source:UniProtKB/TrEMBL;Acc:Q8LAL6]
+208133 Late embryogenesis abundant (LEA) hydroxyproline-rich glycoprotein family [Source:UniProtKB/TrEMBL;Acc:Q56Y59]
+208134 Late embryogenesis abundant (LEA) hydroxyproline-rich glycoprotein family [Source:UniProtKB/TrEMBL;Acc:Q56Y59]
+208135 Late embryogenesis abundant (LEA) hydroxyproline-rich glycoprotein family [Source:UniProtKB/TrEMBL;Acc:Q56Y59]
+208136 Late embryogenesis abundant (LEA) hydroxyproline-rich glycoprotein family [Source:UniProtKB/TrEMBL;Acc:Q56Y59]
+                            name_1006
+207261             biological_process
+207262              helicase activity
+208133             biological_process
+208134                       membrane
+208135 integral component of membrane
+208136                plasma membrane
 
-Using the other descriptions will take much, much longer as the  Information is extracted from the appropriate databases via internet connection. For this tutorial we will be sticking with our un-impressive descriptions. However, you may choose the description best for you and your resesarch. Before we move on to annotating, let's have a look at the filters:
 
-<pre style="color: silver; background: black;">head(listFilters(thale_mart))
-<strong>                name                            description
-1    chromosome_name               Chromosome/scaffold name
-2              start                                  Start
-3                end                                    End
-4             strand                                 Strand
-5 chromosomal_region e.g. 1:100:10000:-1, 1:100000:200000:1
-6        with_chembl                      With ChEMBL ID(s)</strong></pre>
-
-Should we only want to annotate genes from a specific chromosome or any other critera, we would use the "filter" argument in getBM to select only the subset of the genome we desire. We now have all of the pieces required for us to annotate our results. Let's have a look at our gene results object and our thale cress data frame one more time:
-<pre style="color: silver; background: black;">head(thale_data_frame)
-<strong>  ensembl_gene_id ensembl_peptide_id                              description
-1       AT3G11415                                                            
-2       AT1G31258                       other RNA [Source:TAIR;Acc:AT1G31258]
-3       AT5G24735                       other RNA [Source:TAIR;Acc:AT5G24735]
-4       AT2G45780                       other RNA [Source:TAIR;Acc:AT2G45780]
-5       AT2G42425                    Unknown gene [Source:TAIR;Acc:AT2G42425]
-6       AT4G01533                       other RNA [Source:TAIR;Acc:AT4G01533]</strong>
-
-head(results_genes)
-<strong>feature        id        fc        pval      qval
-1    gene AT1G01050 0.8216286 0.038409878 0.9996177
-2    gene AT1G01060 1.2906809 0.825960521 0.9996177
-3    gene AT1G01080 0.8156244 0.276868361 0.9996177
-4    gene AT1G01090 1.0838842 0.009539157 0.9996177
-5    gene AT1G01100 0.9755726 0.687152148 0.9996177
-6    gene AT1G01110 0.9522035 0.706397431 0.9996177</strong></pre>
-
-Funny enough, we do not actually use a biomaRt function to annotate our genes! We can simply subset the thale cress data frame to consist of only rows whose ensemble_gene_id matches our results_genes id. Let's give it a try:
-<pre style="color: silver; background: black;">annotated_genes = subset(thale_data_frame, ensembl_gene_id %in% results_genes$id)
-head(annotated_genes)
-<strong>    ensembl_gene_id ensembl_peptide_id                                                                                 description
-15         AT3G48115                                                                          other RNA [Source:TAIR;Acc:AT3G48115]
-151        AT4G04223                                                                          other RNA [Source:TAIR;Acc:AT4G04223]
-588        AT2G46685                                                              MIR166/MIR166A; miRNA [Source:TAIR;Acc:AT2G46685]
-2239       AT2G18917                                                                          other RNA [Source:TAIR;Acc:AT2G18917]
-2380       AT4G38932                    Potential natural antisense gene, locus overlaps with AT4G38930 [Source:TAIR;Acc:AT4G38932]
-5312       AT1G77590        AT1G77590.1    Long chain acyl-CoA synthetase 9, chloroplastic [Source:UniProtKB/Swiss-Prot;Acc:Q9CAP8]</strong>
-
-##let's check our dimensions to ensure every gene was annotated
-
-dim(results_genes)
-<strong>[1] 117   5</strong>
-
-dim(annotated_genes)
-<strong>[1] 254   3</strong>
-
-##our dimensions do not match! Let's investigate:
-
-head(annotated_genes)
-<strong> ensembl_gene_id ensembl_peptide_id                                                                                 description
-15         AT3G48115                                                                          other RNA [Source:TAIR;Acc:AT3G48115]
-151        AT4G04223                                                                          other RNA [Source:TAIR;Acc:AT4G04223]
-588        AT2G46685                                                              MIR166/MIR166A; miRNA [Source:TAIR;Acc:AT2G46685]
-2239       AT2G18917                                                                          other RNA [Source:TAIR;Acc:AT2G18917]
-2380       AT4G38932                    Potential natural antisense gene, locus overlaps with AT4G38930 [Source:TAIR;Acc:AT4G38932]
-5312       AT1G77590        AT1G77590.1    Long chain acyl-CoA synthetase 9, chloroplastic [Source:UniProtKB/Swiss-Prot;Acc:Q9CAP8]</strong>
-
-tail(annotated_genes)
-<strong>      ensembl_gene_id ensembl_peptide_id                                                                                                    description
-52922       AT5G21930        AT5G21930.4                        Copper-transporting ATPase PAA2, chloroplastic [Source:UniProtKB/Swiss-Prot;Acc:B9DFX7]
-52923       AT5G21930        AT5G21930.1                        Copper-transporting ATPase PAA2, chloroplastic [Source:UniProtKB/Swiss-Prot;Acc:B9DFX7]
-53221       AT1G80290        AT1G80290.1                        Nucleotide-diphospho-sugar transferases superfamily protein [Source:TAIR;Acc:AT1G80290]
-53222       AT1G80290        AT1G80290.2                        Nucleotide-diphospho-sugar transferases superfamily protein [Source:TAIR;Acc:AT1G80290]
-53365       AT1G26670        AT1G26670.1                                                                 VTI1B [Source:UniProtKB/TrEMBL;Acc:A0A178W140]
-53499       AT4G26490        AT4G26490.1 Late embryogenesis abundant (LEA) hydroxyproline-rich glycoprotein family [Source:UniProtKB/TrEMBL;Acc:Q56Y59]</strong></pre>
-
-A-ha. We see the mismatch in dimension length is due to some genes having different isoforms and therefore different peptide ids. Because we matched our data frames by gene id, some of the genes we have extracted multiple peptides! Also, take notice of this:
-
-<pre style="color: silver; background: black;">annotated_genes$ensembl_gene_id
-<strong>  [1] "AT3G48115" "AT4G04223" "AT2G46685" "AT2G18917" "AT4G38932" "AT1G77590" "AT1G77590" "AT5G09480" "AT3G58760" "AT3G58760"
- [11] "AT3G58760" "AT3G58760" "AT3G58760" "AT3G58760" "AT5G09650" "AT4G36430" "AT5G23570" "AT5G23570" "AT5G23570" "AT5G23570"
- [21] "AT4G07990" "AT4G07990" "AT4G07990" "AT3G21720" "AT3G48240" "AT5G16660" "AT5G16660" "AT3G14070" "AT1G20680" "AT1G20680"
- [31] "AT5G21920" "AT5G21920" "AT3G20570" "AT3G56910" "AT2G19110" "AT2G19110" "AT2G19110" "AT5G44450" "AT5G44450" "AT3G24820"
- [41] "AT5G18550" "AT5G18550" "AT5G18550" "AT5G18550" "AT3G27830" "AT3G27830" "AT1G18680" "AT5G11980" "AT5G11980" "AT1G78200"
- [51] "AT1G78200" "AT1G78200" "AT1G78200" "AT1G78200" "AT1G63110" "AT1G63110" "AT1G63110" "AT4G14880" "AT4G14880" "AT4G14880"
- [61] "AT4G14880" "AT4G14880" "AT4G12230" "AT2G46680" "AT2G46680" "AT5G09995" "AT5G09995" "AT5G09995" "AT3G49810" "AT1G80560"
- [71] "AT3G58550" "AT4G24020" "AT4G24020" "AT5G49990" "AT5G49990" "AT5G49990" "AT5G49990" "AT2G43560" "AT2G43560" "AT3G53490"
- [81] "AT5G10450" "AT5G10450" "AT5G10450" "AT5G10450" "AT5G07020" "AT2G45950" "AT2G45950" "AT2G45950" "AT2G45950" "AT2G45950"
- [91] "AT5G22450" "AT5G22450" "AT5G22450" "AT2G43190" "AT2G43190" "AT2G43190" "AT2G43190" "AT2G43190" "AT1G26762" "AT5G48960"
-[101] "AT1G11905" "AT1G11905" "AT2G37920" "AT1G77570" "AT5G07460" "AT5G44580" "AT3G62730" "AT3G62730" "AT5G65120" "AT5G65120"
-[111] "AT4G01037" "AT1G06190" "AT1G06190" "AT1G06190" "AT1G06190" "AT1G06190" "AT3G08910" "AT1G15980" "AT1G78370" "AT1G58360"
-[121] "AT1G01090" "AT1G63860" "AT1G63860" "AT1G63860" "AT1G63860" "AT1G63860" "AT1G63860" "AT4G23710" "AT3G18870" "AT5G21040"
-[131] "AT5G21040" "AT5G21040" "AT4G31420" "AT4G31420" "AT3G05510" "AT3G05510" "AT5G38895" "AT5G38895" "AT5G38895" "AT4G30630"
-[141] "AT4G30630" "AT1G02560" "AT2G21510" "AT2G21510" "AT2G21510" "AT2G21510" "AT2G21510" "AT5G56190" "AT5G56190" "AT5G56190"
-[151] "AT5G56190" "AT5G56190" "AT5G56190" "AT5G56190" "AT1G67950" "AT1G67950" "AT1G67950" "AT1G67950" "AT1G05710" "AT1G05710"
-[161] "AT1G05710" "AT1G05710" "AT1G05710" "AT1G05710" "AT1G05710" "AT1G05710" "AT1G05710" "AT1G05710" "AT1G05710" "AT1G05710"
-[171] "AT1G05710" "AT1G05710" "AT1G73720" "AT5G62680" "AT1G07950" "AT1G07950" "AT1G16560" "AT1G16560" "AT1G16560" "AT1G16560"
-[181] "AT1G16560" "AT1G16560" "AT1G16560" "AT1G16560" "AT1G16560" "AT5G65810" "AT2G18090" "AT2G18090" "AT2G26340" "AT2G26340"
-[191] "AT1G75460" "AT1G31940" "AT4G19230" "AT4G19230" "AT4G11370" "AT4G19006" "AT4G19006" "AT2G21640" "AT1G14400" "AT1G14400"
-[201] "AT1G12050" "AT5G52020" "AT3G52150" "AT3G52150" "AT2G36885" "AT2G36885" "AT2G40060" "AT1G51570" "AT1G07640" "AT1G07640"
-[211] "AT1G07640" "AT5G24780" "AT5G24780" "AT1G02750" "AT1G02750" "AT1G78040" "AT1G78040" "AT1G78040" "AT2G35550" "AT2G35550"
-[221] "AT2G35550" "AT2G35550" "AT3G61530" "AT3G61530" "AT1G70760" "AT3G19390" "AT5G42830" "AT1G23060" "AT1G23060" "AT1G23060"
-[231] "AT1G23060" "AT1G23060" "AT3G56170" "AT2G18150" "AT4G24220" "AT4G24220" "AT4G09060" "AT4G09060" "AT4G26950" "AT4G26950"
-[241] "AT2G37790" "AT5G17210" "AT5G17210" "AT5G43066" "AT1G10430" "AT1G10430" "AT5G21930" "AT5G21930" "AT5G21930" "AT5G21930"
-[251] "AT1G80290" "AT1G80290" "AT1G26670" "AT4G26490"</strong>
+&#35;&#35; The same gene can be associated with multiple go terms , as seen for AT4G26490, and that is the reason why the dimensions of the datasets are not matching.
+&#35;&#35;We successfully completed the annotation of our gene list. Lets write the output to a csv file.
 
 write.csv(file="annotated_genes.csv",annotated_genes,row.names=F)</pre>
 
+</pre>
 
-<h2 id="Seventh_Point_Header">Topological networking using cytoscape</h2>
+<h2 id="Ninth_Point_Header">Topological networking using cytoscape</h2>
 
 <a href="https://github.com/miriamposner/cytoscape_tutorials">Cytoscape</a> is a desktop program which creates visual topological networks of data. To visualise our differentially regulated genes in a network on cytoscape we will follow the following steps
 
@@ -1390,7 +1292,7 @@ Once the genes with differential expression is loaded, select the "Style tab and
 This will highlight the nodes based on the value of fc for protein present in differentially expressed genes and in the network list.<img src="cytoscape_a9.png">
 
 
-<h2 id="Eighth_Point_Header">Conclusion</h2>
+<h2 id="Tenth_Point_Header">Conclusion</h2>
 You may find yourself wondering exactly what it is that we acccomplished by the end of this analysis. First, to recap we:
 
 <pre style="color: silver; background: black;">Downloaded experimental data
