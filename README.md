@@ -576,20 +576,24 @@ The full slurm script [sam_sort_bam.sh ](/mapping/sam_sort_bam.sh) can be found 
 
 <pre style="color: silver; background: black;">bash-4.2$ sbatch sam_sort_bam.sh</pre>
 
-<h2 id="Fifth_Point_Header">Reference Guided Transcript Assembly</h2>
+<h2 id="Fifth_Point_Header">Reference Guided Transcript Assembly</h2> 
+
 **Stringtie** is a fast and highly efficient assembler of RNA-Seq alignments into potential transcripts. It can be executed in 3 different modes
 1. Exclusively reference guided :  In this mode stringtie quantify the expression of known transcripts only.
 2. Reference guided transcript discovery mode : Quantify known transcripts and detect novel ones.
 3. De-novo mode : Detect and assemble transcripts.
 
-We will be running stringtie using the option 2 that includes step 7, 8 and 9 of the workflow.  In the first step of this process stringtie along with sample bam file and  refernce gtf file generate a gtf file corresponding to the sample.  This gtf file have information on expression levels of transcripts, exons and other features along with any novel transcripts. The syntax of the command is
+We will be running stringtie using the option 2 that includes step 7, 8 and 9 of the workflow.  In the first step of this process stringtie along with sample bam file and  refernce gtf file generate a gtf file corresponding to the sample.  This gtf file have information on expression levels of transcripts, exons and other features along with any novel transcripts. The syntax of the command is 
 
-`stringtie -p 4 -l label -G Reference.gtf -o sample.gtf sample.bam`
+`stringtie -p 4 -l label -G Reference.gtf -o sample.gtf sample.bam` 
+
 In this command
+```
 -p specifies the number of threads to use.
 -l label used in gtf file
 -G Reference GTF available from public domain databases
 -o output gtf corresponding to expression levels of features of the sample
+```
 
 Once we have ran this command through all our six samples (WT1, WT2, WT3, EE1,EE2 and EE3) we will have 6 gtf files each corresponding to one of the sample containng feature expression values. Having 6 different gtf files is of no advantage as each may contain same novel transcript but labelled differently.  Ideally we would like to merge these 6 gtf files along with the reference GTF to achieve following goals
 - Redundant transcripts across the samples should be represented once
@@ -597,12 +601,18 @@ Once we have ran this command through all our six samples (WT1, WT2, WT3, EE1,EE
 - Novel transcripts present across multiple samples with different names should be represented once.
 
 The command we will use to achieve this is `stringtie --merge` and the syntax is
-`stringtie --merge -p 4 -o stringtie_merged.gtf -G Reference.gtf listOfSampleGTFs.txt`
 
+```
+stringtie --merge -p 4 -o stringtie_merged.gtf -G Reference.gtf listOfSampleGTFs.txt
+```
+
+options used:
+```
 -p specifies the number of threads to use
 -G Reference GTF available from public domain databases
 -o output merged gtf file
-listOfSampleGTFs.txt : This is a text file with list of gtfs generated freom the samples in previous step.
+``` 
+*listOfSampleGTFs.txt*  : This is a text file with list of gtfs generated freom the samples in previous step.
 
 `ls -1 ath*/*.gtf >> sample_assembly_gtf_list.txt`
 
@@ -643,7 +653,10 @@ stringtie --merge -p 8 -o stringtie_merged.gtf -G /isg/shared/databases/alignerI
 module load gffcompare/0.10.4
 
 gffcompare -r /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o gffcompare stringtie_merged.gtf
-```
+```  
+
+The full script is called [stringtie_gft.sh](/ballgown/stringtie_gft.sh) and can be found in the **ballgown/** folder. 
+
 Now lets examine the outputs generated from this script.  As discussed above in first step stringtie genrates a gtf file for each sample with details of covrage, FPKM, TPM and other information on the transcripts based on sample bam file.
 ```less transcripts.gtf
 # StringTie version 2.0.3
@@ -653,9 +666,8 @@ Now lets examine the outputs generated from this script.  As discussed above in 
 1       StringTie       exon    4486    4605    1000    +       .       gene_id "EE1.1"; transcript_id "EE1.1.1"; exon_number "3"; reference_id "AT1G01010.1"; ref_gene_id "AT1G01010"; ref_gene_name "AT1G01010"; cov "0.866667";
 1       StringTie       exon    4706    5095    1000    +       .       gene_id "EE1.1"; transcript_id "EE1.1.1"; exon_number "4"; reference_id "AT1G01010.1"; ref_gene_id "AT1G01010"; ref_gene_name "AT1G01010"; cov "2.884615";
 ```
-. Press `Q` to come out of the display. 
-Now lets have a look at out merged GTF file `stringtie_merged.gtf
-` from the previous script/
+
+Now lets have a look at out merged GTF file `stringtie_merged.gtf` from the previous step:
 
 ```less stringtie_merged.gtf
 # stringtie --merge -p 8 -o stringtie_merged.gtf -G /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf sample_assembly_gtf_list.txt
@@ -677,8 +689,8 @@ Now lets have a look at out merged GTF file `stringtie_merged.gtf
 ```
 This is our new refernce GTF file we will be using to quantify the expression of dfferent genes and transcripts.  If we look closer we can see that the file have information different features but exclude coverage, TPM and FPKM information.  Thats how we want it to be for use as refernce in sunsequent analysis.  Also note that the first two transcripts have known ENSEMBL `transcrip-id`,`gene_name` and `ref_gene_id`, however it is missing in transcript 3.  This is because it represents a novel transcript identified in the study.  
 
-Before we go ahead lets have look at the GFF compare stats.  The file we are looking for is `gffcompare.stats`, and the contents are self explanatory. One can explore other files `gffcompare.annotated.gtf`,`gffcompare.loci`,`gffcompare.stats`,`gffcompare.stringtie_merged.gtf.refmap`,`gffcompare.stringtie_merged.gtf.tmap`,`gffcompare.tracking` of the comparison to have a deeper understanding of the differences.
-```less gffcompare.stats
+Before we go ahead lets have look at the GFF compare stats.  The file we are looking for is `gffcompare.stats`, and the contents are self explanatory. One can explore other files `gffcompare.annotated.gtf`, `gffcompare.loci` ,`gffcompare.stats`,`gffcompare.stringtie_merged.gtf.refmap` , `gffcompare.stringtie_merged.gtf.tmap` , `gffcompare.tracking`  of the comparison to have a deeper understanding of the differences.
+```
 
 # gffcompare v0.10.4 | Command line was:
 #gffcompare -r /isg/shared/databases/alignerIndex/plant/Arabidopsis/thaliana/TAIR10_GFF3_genes.gtf -o gffcompare stringtie_merged.gtf .  
@@ -717,13 +729,17 @@ Now lets go ahead and do the transcript quantification using stringtie.
 
 <h2 id="Sixth_Point_Header">Transcript quantification with StringTie</h2>
 
-In this step we will use the `stringtie_merged.gtf` file as reference and measure the expression of exons, transcripts and other features present in the gtf file.  The syntax of command we will be executing is,
-`stringtie -e -B -p 4 sample.bam -G stringtie_merged.gtf -o output.count -A gene_abundance.out`
-
+In this step we will use the `stringtie_merged.gtf` file as reference and measure the expression of exons, transcripts and other features present in the gtf file.  The syntax of command we will be executing is, 
+``` 
+stringtie -e -B -p 4 sample.bam -G stringtie_merged.gtf -o output.count -A gene_abundance.out
+```
+Where:
+```
 -B returns a Ballgown input table file
 -e only estimate the abundance of given reference transcripts
 -o output path/file name
 -A gene abundance estimation output file
+```
 
 We can compose a script based on the above command to run all out samples.
 
