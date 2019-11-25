@@ -1155,32 +1155,6 @@ write.csv(g_sign, "results_genes.csv", row.names=FALSE)
 
 So we have 388 genes which shows differential expression across our sample conditions.  
 
-AT this point we can perform principal component analysis of our dataset using the 388genes and this will address two points
-(1) Whats the degree of reproducibility across our biological replicates?
-(2) To what extent the 388 genes explains the variance in our sample condition?
-
-In order to achieve this we have to extract the fpkm values corresponding to the 388 genes from the `gene_expression` object holding fpkm values of all the detected genes.
-
-<pre style="color: silver; background: black;">
-&#35;&#35; Subset genes from gene_expression whose gene ID is present in g_sign
-sig_gene_fpkm=gene_expression[rownames(gene_expression) %in% g_sign$id,]
-
-&#35;&#35; Reassign column names
-colnames(sig_gene_fpkm)<-c("EE1","EE2","EE3","WT1","WT2","WT3")
-head(sig_gene_fpkm)
-                EE1        EE2        EE3      WT1      WT2      WT3
-AT1G01046  0.0000000  0.4551480  0.4800380 0.422412 2.445734 0.000000
-AT1G02360  1.3315690  0.4625370  0.8413550 0.150970 0.200799 0.238993
-AT1G02520  6.0268930  3.1223790  4.4537800 7.969385 8.486231 8.237259
-AT1G02820 18.0663470 10.2200270 14.4798820 4.727195 3.801382 6.377376
-AT1G03070  0.5091674  0.9138772  0.3889898 1.162226 1.441914 1.891146
-AT1G03935  5.1024750  6.5259790  6.2669260 3.841783 2.644548 2.658530
-
-dim(sig_gene_fpkm)
-[1] 388   6
-&#35;&#35; Our selected dataset has 388 genes same as that were in g_sign
-</pre>
-
 
 <h2 id="Eighth_Point_Header">Gene annotation with BiomaRt</h2>
 
