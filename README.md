@@ -492,12 +492,10 @@ When HISAT2 completes its run, it will summarize each of it’s alignments, and 
         93444 (29.35%) aligned exactly 1 time
         2569 (0.81%) aligned >1 times
 98.35% overall alignment rate                                                                                                         
-
-
 </pre>
-<br>
+
 Let's have a look at a SAM file:
-```
+<pre style="color: silver; background: black;">
 -bash-4.2$ head -n 20 EE_Rep1.sam
 @HD	VN:1.0	SO:unsorted
 @SQ	SN:1	LN:30427671
@@ -519,8 +517,7 @@ SRR8428906.14	141	*	0	0	*	*	0	0	GTCACGACGAGATCCTCGCCGTCGGGCATGCGCGCCTTGAGCCTGGCG
 SRR8428906.15	77	*	0	0	*	*	0	0	GACCAGTATAAATCTTTGCCGCAACAGCTCTTCTCCGCCGCTCTCTTCTCCGATTGTTCTCCCTCTCTCTCCACGACGGTTTCCTCCTCGTCGCCATCGCTGCTGCTGCAGCTGCAGCGCTGGCGCCGAGGAGGTAACCGTCGTGGAGAG	<AFFFFF<AFJJJJJJ-FFJJJJJJJJJJJJJJJFJA7AFJJJJJJJJJ<J<JFFFJJJJJJJJJJFJJJJJJJFFJ<AJJ<FJJFJFJJJJFFJJJJ<FJ<<<<JJFF-FJJFJ<AFJ-77AJJ7JAA7A<AJ-7JAAFFJ7AAF<--A	YT:Z:UP
 SRR8428906.15	141	*	0	0	*	*	0	0	GTTCTCCCTCTCTCTCCACGACGGTCTCCTCCTCGTCGCCATCGCTGCAGCTGCAGCAGCAGCGATGGCGACGAGGAGGAAACCGTCGTGGAGAGAGAGGGAGAACAATCGGAGAAGAGAGCGGCGGAGAAGAGCTGTTGCGGCGAAGAT	AAAFFAFJJJ7-FJJFJJJFA-FJJ-AFJJAFFJJ<JJJJ-AJFJJJA-FJJ7<-AJ--<AJFJ7JAJFJ--7AJFJJJ-FJFJAJFJ<FA77-77A-AF<7<FJJJJJ<AF<F<-7AFFJJJJJJJFAFFAFF-FAJFAF<FFJA<J-A	YT:Z:UP
 SRR8428906.10	83	4	12885525	60	150M	=	12885314	-275	CATTGTTGTAAGTGCTGTGGATAATGTGCTCTAAGGGCTTGCCTTCAAGCTCGGTTCCAAGAACCTGTTTCTTGAGGTTGTCCACGTAAGCTCTGTGATGTTTTCCCCAGTGAAACTCCAGAGTTTGTTTGCTCATATGCGGCTCCAAAG	FJJJJJJJJJJJFJJJJJFFFFJF<AJJF<FJFJJJJJFJ7JAFJAA<JJJA-JJJJJJJJJFFJJJJJFFFJA<JJJJJJF<FJFJ7JJ<-JFFFFJJJJJJJJJJJJJJAFFFJJJJJFJJJJJJJJJJA<FJJJJJF7JFJFFAAAA	AS:i:0	XN:i:0	XM:i:0	XO:i:0	XG:i:0	NM:i:0	MD:Z:150	YS:i:-3	YT:Z:CP	NH:i:1
-
-```
+</pre>
 
 All of the lines starting with an "@" symbol tell us something about the chromosomes or our input. For instance "@SQ SN:Chr1 LN:30427671" tells us that we have a sequence (@SQ) whose sequence name is Chr1 (SN:Chr1), lastly the sequence has a length of 30427671bp (LN:30427671). You may be wondering what the first line means. It is quite straightfoward! The first line is simply the header (@HD) stating that the file is unsorted (SO:unsorted). The second column in the first line is somewhat of a dummy variable, but stands for "version number". Lastly we have the "@PG" line, which, in order, keeps track of the software used to write the file (ID:hisat2), the program name used to align the reads (PN:hisat2), the version of the program used (VN:2.1.0), and lastly the user input which started the process (written in the form that the program reads, not in which we wrote it).
 
