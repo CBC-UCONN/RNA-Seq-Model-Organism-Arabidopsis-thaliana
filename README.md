@@ -977,8 +977,6 @@ We want all of the objects in our arguments to be in the same order as they are 
 
 Now we construct a 6x2 phenotype matrix with the first column being our samples in order and the second each sample's phenotype:
 
-<pre style="color: silver; background: black;">pheno_data = c("athaliana_root_1", "athaliana_root_2", "athaliana_shoot_1",  "athaliana_shoot_2","root","root","shoot","shoot")</pre>
-
 <pre style="color: silver; background: black;">
 sample<-c("athaliana_EE_Rep1","athaliana_EE_Rep2", "athaliana_EE_Rep3", "athaliana_wt_Rep1", "athaliana_wt_Rep2", "athaliana_wt_Rep3" )
 type<-c(rep("EE",3),rep("wt",3))
