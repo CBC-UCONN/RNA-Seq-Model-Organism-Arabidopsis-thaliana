@@ -10,7 +10,7 @@ This repository is a usable, publicly available tutorial for analyzing different
 <li><a href="#First_Point_Header">1 Introduction and programs</>
 <li><a href="#Second_Point_Header">2 Accessing the data using sra-toolkit</a></li>
 <li><a href="#Third_Point_Header">3 Quality control using sickle</a></li>
-<li><a href="#Fourth_Point_Header">4 Aligning reads to a genome using hisat2</a></li>
+<li><a href="#Fourth_Point_Header">4 Aligning reads to a genome using HISAT2</a></li>
 <li><a href="#Fifth_Point_Header">5 Reference Guided Transcript Assembly</a></li>
 <li><a href="#Sixth_Point_Header">6 Transcript quantification with StringTie</a></li>
 <li><a href="#Seventh_Point_Header">7 Differential expression analysis using Ballgown</a></li>
@@ -324,7 +324,7 @@ We see that our multiqc file has the same indices as our fastqc files, but is si
 <img src="multiqc.png">
 
 
-<h2 id="Fourth_Point_Header">Aligning reads to a genome using hisat2</h2>
+<h2 id="Fourth_Point_Header">Aligning reads to a genome using HISAT2</h2>
 <a href="https://ccb.jhu.edu/software/hisat2/manual.shtml">HISAT2</a> is a fast and sensitive aligner for mapping next generation sequencing reads against a reference genome. HISAT2 requires two arguments: the reads file being mapped and the indexed genome to which those reads are mapped. Typically, the hisat2-build command is used to make a HISAT index file for the genome. It will create a set of files with the suffix .ht2, these files together build the index. What is an index and why is it helpful? Genome indexing is the same as indexing a tome, like an encyclopedia. It is much easier to locate  Information in the vastness of an encyclopedia when you consult the index, which is ordered in an easily navigatable way with pointers to the location of the  Information you seek within the encylopedia. Genome indexing is thus the structuring of a genome such that it is ordered in an easily navigatable way with pointers to where we can find whichever gene is being aligned. Let's have a look at how the hisat2-build command works:
 
 <pre style="color: silver; background: black;">-bash-4.2$ module load hisat2
