@@ -1047,7 +1047,7 @@ plot(pc$x[,1],pc$x[,2], xlab="PC1", ylab="PC2", main="PCA plot for all libraries
 ```
 <img src="AllSamplesPCA.png"> </a><br>
 
-PC1 (x-axis) of the plot do not clearly seperates samples from (WT and EE ) condition but PC2 (Y-axis) does.  This means the second most source of varince in our samples is the treatment. As anresearcher if we encounter such a situation we will be trying to identify the factor that is responsible for the PC1.
+PC1 (x-axis) of the plot do not clearly seperates samples from (WT and EE ) condition but PC2 (Y-axis) does.  This means the second most source of variance in our samples is the treatment. As a researcher if we encounter such a situation we will be trying to identify the factor(s) that is responsible for the PC1.
 
 
 To perform the differential expression analysis we use ballgown's "stattest" function. Let's have a look at it:
