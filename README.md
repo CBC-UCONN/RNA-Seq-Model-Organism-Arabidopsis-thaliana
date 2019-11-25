@@ -402,32 +402,98 @@ When HISAT2 completes its run, it will summarize each of it’s alignments, and 
 
 <pre style="color: silver; background: black;">bash-4.2$ less hisat2_run&#42;err
 
-                                                                                                          
+ 6723160 reads; of these:
+  6723160 (100.00%) were paired; of these:
+    138497 (2.06%) aligned concordantly 0 times
+    6459952 (96.09%) aligned concordantly exactly 1 time
+    124711 (1.85%) aligned concordantly >1 times
+    ----
+    138497 pairs aligned concordantly 0 times; of these:
+      24883 (17.97%) aligned discordantly 1 time
+    ----
+    113614 pairs aligned 0 times concordantly or discordantly; of these:
+      227228 mates make up the pairs; of these:
+        134333 (59.12%) aligned 0 times
+        91008 (40.05%) aligned exactly 1 time
+        1887 (0.83%) aligned >1 times
+99.00% overall alignment rate
+6948614 reads; of these:
+  6948614 (100.00%) were paired; of these:
+    145561 (2.09%) aligned concordantly 0 times
+    6657086 (95.80%) aligned concordantly exactly 1 time
+    145967 (2.10%) aligned concordantly >1 times
+    ----
+    145561 pairs aligned concordantly 0 times; of these:
+      25976 (17.85%) aligned discordantly 1 time
+    ----
+    119585 pairs aligned 0 times concordantly or discordantly; of these:
+      239170 mates make up the pairs; of these:
+        138700 (57.99%) aligned 0 times
+        97982 (40.97%) aligned exactly 1 time
+        2488 (1.04%) aligned >1 times
+99.00% overall alignment rate
+7781644 reads; of these:
+  7781644 (100.00%) were paired; of these:
+    288062 (3.70%) aligned concordantly 0 times
+    7336202 (94.28%) aligned concordantly exactly 1 time
+    157380 (2.02%) aligned concordantly >1 times
+    ----
+    288062 pairs aligned concordantly 0 times; of these:
+      25771 (8.95%) aligned discordantly 1 time
+    ----
+    262291 pairs aligned 0 times concordantly or discordantly; of these:
+      524582 mates make up the pairs; of these:
+        311994 (59.47%) aligned 0 times
+        207748 (39.60%) aligned exactly 1 time
+        4840 (0.92%) aligned >1 times
+98.00% overall alignment rate
+6952854 reads; of these:
+  6952854 (100.00%) were paired; of these:
+    347150 (4.99%) aligned concordantly 0 times
+    6469572 (93.05%) aligned concordantly exactly 1 time
+    136132 (1.96%) aligned concordantly >1 times
+    ----
+    347150 pairs aligned concordantly 0 times; of these:
+      25321 (7.29%) aligned discordantly 1 time
+    ----
+    321829 pairs aligned 0 times concordantly or discordantly; of these:
+      643658 mates make up the pairs; of these:
+        550852 (85.58%) aligned 0 times
+        90597 (14.08%) aligned exactly 1 time
+        2209 (0.34%) aligned >1 times
+96.04% overall alignment rate
+7113688 reads; of these:
+  7113688 (100.00%) were paired; of these:
+    208961 (2.94%) aligned concordantly 0 times
+    6747265 (94.85%) aligned concordantly exactly 1 time
+    157462 (2.21%) aligned concordantly >1 times
+    ----
+    208961 pairs aligned concordantly 0 times; of these:
+      23050 (11.03%) aligned discordantly 1 time
+    ----
+    185911 pairs aligned 0 times concordantly or discordantly; of these:
+      371822 mates make up the pairs; of these:
+        264942 (71.26%) aligned 0 times
+        104137 (28.01%) aligned exactly 1 time
+        2743 (0.74%) aligned >1 times
+98.14% overall alignment rate
+6753777 reads; of these:
+  6753777 (100.00%) were paired; of these:
+    189669 (2.81%) aligned concordantly 0 times
+    6420786 (95.07%) aligned concordantly exactly 1 time
+    143322 (2.12%) aligned concordantly >1 times
+    ----
+    189669 pairs aligned concordantly 0 times; of these:
+      30470 (16.06%) aligned discordantly 1 time
+    ----
+    159199 pairs aligned 0 times concordantly or discordantly; of these:
+      318398 mates make up the pairs; of these:
+        222385 (69.84%) aligned 0 times
+        93444 (29.35%) aligned exactly 1 time
+        2569 (0.81%) aligned >1 times
+98.35% overall alignment rate                                                                                                         
 
-34475799 reads; of these:
-  34475799 (100.00%) were unpaired; of these:
-    33017550 (95.77%) aligned 0 times
-    1065637 (3.09%) aligned exactly 1 time
-    392612 (1.14%) aligned >1 times
-4.23% overall alignment rate
-42033973 reads; of these:
-  42033973 (100.00%) were unpaired; of these:
-    40774230 (97.00%) aligned 0 times
-    931377 (2.22%) aligned exactly 1 time
-    328366 (0.78%) aligned >1 times
-3.00% overall alignment rate
-31671127 reads; of these:
-  31671127 (100.00%) were unpaired; of these:
-    31103167 (98.21%) aligned 0 times
-    465131 (1.47%) aligned exactly 1 time
-    102829 (0.32%) aligned >1 times
-1.79% overall alignment rate
-49890217 reads; of these:
-  49890217 (100.00%) were unpaired; of these:
-    48622480 (97.46%) aligned 0 times
-    1029943 (2.06%) aligned exactly 1 time
-    237794 (0.48%) aligned >1 times
-2.54% overall alignment rate
+
 </pre>
 <br>
 Let's have a look at a SAM file:
