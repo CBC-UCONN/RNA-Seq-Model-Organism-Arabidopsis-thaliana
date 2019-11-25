@@ -11,9 +11,9 @@ This repository is a usable, publicly available tutorial for analyzing different
 <li><a href="#Second_Point_Header">2 Accessing the data using sra-toolkit</a></li>
 <li><a href="#Third_Point_Header">3 Quality control using sickle</a></li>
 <li><a href="#Fourth_Point_Header">4 Aligning reads to a genome using hisat2</a></li>
-<li><a href="#Fifth_Point_Header">5 Fifth_Point_Header">Reference Guided Transcript Assembly</a></li>
+<li><a href="#Fifth_Point_Header">5 Reference Guided Transcript Assembly</a></li>
 <li><a href="#Sixth_Point_Header">6 Transcript quantification with StringTie</a></li>
-<li><a href="#Seventh_Point_Header">7 Differential expression analysis using ballgown</a></li>
+<li><a href="#Seventh_Point_Header">7 Differential expression analysis using Ballgown</a></li>
 <li><a href="#Eighth_Point_Header">8 Gene annotation with BiomaRt</a></li>
 <li><a href="#Ninth_Point_Header">9 Topological networking using cytoscape</a></li>
 <li><a href="#Tenth_Point_Header">10 Conclusion</a></li>
@@ -820,7 +820,7 @@ i2t.ctab: table with two columns, i_id and t_id, denoting which introns belong t
 ```
 
 
-Let's have a look at the stringtie output .counts file which we will be using in ballgown:
+Let's have a look at the stringtie output .counts file which we will be using in Ballgown:
 
 <pre style="color: silver; background: black;"># # stringtie -e -B -p 8 ../mapping/EE_Rep1_sort.bam -G stringtie_merged.gtf -o athaliana_EE_Rep1/athaliana_EE_Rep1.count -A athaliana_EE_Rep1/EE_Rep1_gene_abun.out
 # StringTie version 2.0.3
@@ -836,8 +836,8 @@ Let's have a look at the stringtie output .counts file which we will be using in
 
 <br>
 
-<h2 id="Seventh_Point_Header">Differential expression analysis using ballgown</h2>
-For many organisms, many of the same genes are expressed in separate cell types, with a variety of phenotype differences a result of the specific isoforms a cell will use. Therefore, when performing a differential expression analysis from different parts of one organism (not one species, but a singular organism), it is wise to perform an isoform expression analysis alongside a standard differential expression analysis and combine the results (as we are doing here). We will only be performing the isoform expresion analysis. <a href="https://bioconductor.org/packages/release/bioc/html/ballgown.html">Ballgown</a> is a differential expression package for R via Bioconductor ideal for isoform expression analyses. Before beginning, you need to secure copy our ballgown directory from Xanadu to your local machine:
+<h2 id="Seventh_Point_Header">Differential expression analysis using Ballgown</h2>
+For many organisms, many of the same genes are expressed in separate cell types, with a variety of phenotype differences a result of the specific isoforms a cell will use. Therefore, when performing a differential expression analysis from different parts of one organism (not one species, but a singular organism), it is wise to perform an isoform expression analysis alongside a standard differential expression analysis and combine the results (as we are doing here). We will only be performing the isoform expresion analysis. <a href="https://bioconductor.org/packages/release/bioc/html/ballgown.html">Ballgown</a> is a differential expression package for R via Bioconductor ideal for isoform expression analyses. Before beginning, you need to secure copy our ballgown/ directory from Xanadu to your local machine:
 
 <pre style="color: silver; background: black;">-bash-4.2$ exit
 Connection to transfer.cam.uchc.edu closed.
