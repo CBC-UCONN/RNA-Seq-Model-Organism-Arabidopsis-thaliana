@@ -15,7 +15,7 @@ This repository is a usable, publicly available tutorial for analyzing different
 <li><a href="#Sixth_Point_Header">6 Transcript quantification with StringTie</a></li>
 <li><a href="#Seventh_Point_Header">7 Differential expression analysis using Ballgown</a></li>
 <li><a href="#Eighth_Point_Header">8 Gene annotation with BiomaRt</a></li>
-<li><a href="#Ninth_Point_Header">9 Topological networking using cytoscape</a></li>
+<li><a href="#Ninth_Point_Header">9 Topological networking using Cytoscape</a></li>
 <li><a href="#Tenth_Point_Header">10 Conclusion</a></li>
 </ul>
 </div>
@@ -1288,20 +1288,20 @@ write.csv(file="annotated_genes.csv",annotated_genes,row.names=F)</pre>
 
 </pre>
 
-<h2 id="Ninth_Point_Header">Topological networking using cytoscape</h2>
+<h2 id="Ninth_Point_Header">Topological networking using Cytoscape</h2>
 
-<a href="https://github.com/miriamposner/cytoscape_tutorials">Cytoscape</a> is a desktop program which creates visual topological networks of data. To visualise our differentially regulated genes in a network on cytoscape we will follow the following steps
+<a href="https://github.com/miriamposner/cytoscape_tutorials">Cytoscape</a> is a desktop program which creates visual topological networks of data. To visualise our differentially regulated genes in a network on Cytoscape we will follow the following steps
 
 1. Load networkfile 
 2. Lay the network out
 3. Load Expression Data 
 4. Examine node attributes
 
-A detailed slides and tutorial is available at this <a href="https://cytoscape.org/cytoscape-tutorials/protocols/basic-data-visualization/#/">LINK</a>. Lets start cytoscape and the application will start with following screen.<img src="cytoscape_a1.png">   
-Have a look around at different tabs and menu and familiarise yourself with it. A network can be loaded in cytoscape using the import function located under file menu as shown in the image below.  A network can be imported from a file (as we are going to do it), url or from public database.<img src="cytoscape_a2.png">  Import TAIR10 network file TairPP_refined.txt using file>import>Network from FIle option . The following table will be displayed .<img src="cytoscape_a3.png">   The table will display different columns of the network file. In this we have to specify which column represent protein A (source node) and which column represent protein B (target node) of A --> B type protein-protein intercation.
+A detailed slides and tutorial is available at this <a href="https://cytoscape.org/cytoscape-tutorials/protocols/basic-data-visualization/#/">LINK</a>. Lets start Cytoscape and the application will start with following screen.<img src="cytoscape_a1.png">   
+Have a look around at different tabs and menu and familiarise yourself with it. A network can be loaded in Cytoscape using the import function located under file menu as shown in the image below.  A network can be imported from a file (as we are going to do it), url or from public database.<img src="cytoscape_a2.png">  Import TAIR10 network file TairPP_refined.txt using file>import>Network from FIle option . The following table will be displayed .<img src="cytoscape_a3.png">   The table will display different columns of the network file. In this we have to specify which column represent protein A (source node) and which column represent protein B (target node) of A --> B type protein-protein intercation.
 <img src="cytoscape_a4.png"> <img src="cytoscape_a5.png"> 
 
-Once imported different layouts can be tried listed under layout tab of cytoscape. Once you have chosen an appropriate layout and then import  differential expression data stored in csv or txt file using icon. <img src="cytoscape_a6.png">
+Once imported different layouts can be tried listed under layout tab of Cytoscape. Once you have chosen an appropriate layout and then import  differential expression data stored in csv or txt file using icon. <img src="cytoscape_a6.png">
 
 Once the genes with differential expression is loaded, select the "Style tab and choose the "Fill Color".  Under fill color choose Column value to "fc" (fold change from csv file) and set Mapping type to "Continous mapping". You can double click on the color panel to set colors of your choice and can set boudries.<img src="cytoscape_a7.png"> <img src="cytoscape_a8.png">
 
