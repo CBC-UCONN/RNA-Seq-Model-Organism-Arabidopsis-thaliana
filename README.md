@@ -26,7 +26,7 @@ This repository is a usable, publicly available tutorial for analyzing different
 
 The Sequence Read Archive, or SRA, is a publicly available database containing read sequences from a variety of experiments. Scientists who would like their read sequences present on the SRA submit a report containing the read sequences, experimental details, and any other accessory meta-data.
 
-Our data, SRR8428904, SRR8428905, SRR8428906, SRR8428907, SRR8428908, SRR8428909 come from EE1, EE2, EE3, WT1, WT2, and WT3 respectively. Our objective in this analysis is to determine which genes are expressed in all samples, quantify the expression of each common gene in each sample, identify genes which are differentially expressed between  WT1, WT2 and WT3  EE1, EE2 and EE3, quantify the relative expression of such genes, and lastly to create a visual topological network of genes with similar expression profiles.
+Our data, SRR8428904, SRR8428905, SRR8428906, SRR8428907, SRR8428908, SRR8428909 come from EE1, EE2, EE3, WT1, WT2, and WT3 respectively. Our objective is to identify genes which are differentially expressed between WT and EE sample conditions.  We have 3 replicates for each condition WT1, WT2, WT3 and EE1, EE2, EE3 for wildtype and ectopic-expression conditions respectively. Finally we will create a visual topological network of genes with similar expression profiles.
 
 You may connect to Xanadu via SSH, which will direct you in your home directory
 
