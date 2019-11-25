@@ -1008,7 +1008,8 @@ Thu May  2 22:33:56 2019</strong>
 
 </pre>
 
-The ballgown object `bg` stores the fpkm values corresponding to genes.  Before calculating the fold changes in gene expression we can explore the expression of genes across the samples.  We will create a `gene_expression`variable holding the fpkm value of genes and then plot a boxplot of fpkm values from all the samples.
+The ballgown object `bg` stores the fpkm values corresponding to genes.  Before calculating the fold changes in gene expression we can explore the expression of genes across the samples and also check for the variance in the dataset and try to identify any confounding factors. 
+In the first step will create a `gene_expression`variable holding the fpkm value of genes and then plot a boxplot of fpkm values from all the samples.
 
 <pre style="color: silver; background: black;">gene_expression = gexpr(bg) #extract fpkm values of genes
 head(gene_expression)
@@ -1017,6 +1018,37 @@ boxplot(log10(gene_expression+1),names=c("EE1","EE2","EE3","WT1","WT2","WT3"),co
 The boxplot below gives an overview of expression of fpkm values of different genes across different samples. We have log10 transformed the values to visualise it better and added 1 `gene_expression+1` to avoid errors if the fpkm values are 0.
 
 <img src="fpkm_box_plot.png"> </a><br>
+
+In the next step we will perform principal component analysis (PCA) with top 500 genes with highest variance.  The PCA is a good way of identifying the factors that are responsible for variance in your sample.  In an ideal situation we would like to see that PC1 (Principal component 1 or the component with highest variance) cluster our samples(replicates) based on treatment.  If the clustering is because of any other factor like source of material, day of experiemnt etc then it will indicate that there are confounding factors affecting the gene expression.  We have to model these factors in our analysis. 
+```gene_expression = gexpr(bg)
+samples<-c("EE1","EE2","EE3","WT1","WT2","WT3")
+colnames(gene_expression)<-samples
+
+library("genefilter")
+library("ggplot2")
+library("grDevices")
+
+# identify the variance in the genes
+rv <- rowVars(gene_expression)
+select <- order(rv, decreasing=T)[seq_len(min(500,length(rv)))]
+pc<-prcomp(t(gene_expression[select,]),scale=TRUE)
+pc$x
+scores <- data.frame(pc$x, samples)
+scores 
+pcpcnt<-round(100*pc$sdev^2/sum(pc$sdev^2),1)
+names(pcpcnt)<-c("PC1","PC2","PC3","PC4","PC5","PC6")
+# Lets see how much variance is associate with each p[rincipal component.
+pcpcnt
+
+point_colors = c("red", "red","red","blue", "blue", "blue")
+plot(pc$x[,1],pc$x[,2], xlab="", ylab="", main="PCA plot for all libraries",xlim=c(min(pc$x[,1])-2,max(pc$x[,1])+2),ylim=c(min(pc$x[,2])-2,max(pc$x[,2])+2),col=point_colors)
+text(pc$x[,1],pc$x[,2],pos=2,rownames(pc$x), col=c("red", "red","red","blue", "blue", "blue"))
+plot(pc$x[,1],pc$x[,2], xlab="PC1", ylab="PC2", main="PCA plot for all libraries",col=point_colors)
+```
+<img src="AllSamplesPCA.png"> </a><br>
+
+PC1 (x-axis) of the plot do not clearly seperates samples from (WT and EE ) condition but PC2 (Y-axis) does.  This means the second most source of varince in our samples is the treatment. As anresearcher if we encounter such a situation we will be trying to identify the factor that is responsible for the PC1.
+
 
 To perform the differential expression analysis we use ballgown's "stattest" function. Let's have a look at it:
 <pre style="color: silver; background: black;">??ballgown::stattest</pre>
