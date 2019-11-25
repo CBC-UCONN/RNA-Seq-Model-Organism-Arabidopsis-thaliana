@@ -22,7 +22,7 @@ This repository is a usable, publicly available tutorial for analyzing different
 
 <h2 id="First_Point_Header">Introduction and programs</h2>
 
-*Arabidopsis thaliana* is a small flowering plant that is used as a model system in research of plant biology. It helped researchers to build basic understanding around molecular, biochemical and genetics processes in the plants.  A wealth of knowledge and information is available around Arabidopsis genomics (genome sequence, transcriptome, genetic markers etc) and hence could be used as ideal system to develop fundamental understanding plant RNA-seq analysis before venturing in the transcriptomics world of non moodel species. In this tutorial we will be using RNAseq dataset from the flower buds of A. thaliana and the study was published in "Frontiers in Plant Science" (https://www.frontiersin.org/articles/10.3389/fpls.2019.00763/full).  This study was aimed at understanding the functional role of Monoacylglycerol lipase (MAGL) hydrolyzes known to produce free fatty acid and glycerol. The enzyme is well studied in animal kingdom but a little is known about its function in plants. This study involves ectopic expression (EE) of BnaC.MAGL8.a in Arabidopsis to explore its potential biological function. They observed that this ectopic expression causes male sterility by affecting the devlopment of pollens.  To develop their molecular understanding around the process they carried out RNAseq studies in the flower buds.  Total 6 RNAseq datasets representing 3 biological replicates each for WT and BnaC.MAGL8.a were used in this study The RNA profiles are archived in the SRA, and meta Information on each may be viewed through the SRA ID: SRR8428904, SRR8428905, SRR8428906, SRR8428907, SRR8428908, SRR8428909(https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP178230).
+*Arabidopsis thaliana* is a small flowering plant that is used as a model system in research of plant biology. It helped researchers to build basic understanding around molecular, biochemical and genetics processes in the plants.  A wealth of knowledge and information is available around Arabidopsis genomics (genome sequence, transcriptome, genetic markers etc) and hence could be used as ideal system to develop fundamental understanding plant RNA-seq analysis before venturing in the transcriptomics world of non model species. In this tutorial we will be using RNAseq dataset from the flower buds of A. thaliana and the study was published in "Frontiers in Plant Science" (https://www.frontiersin.org/articles/10.3389/fpls.2019.00763/full).  This study was aimed at understanding the functional role of Monoacylglycerol lipase (MAGL) hydrolyzes known to produce free fatty acid and glycerol. The enzyme is well studied in animal kingdom but a little is known about its function in plants. This study involves ectopic expression (EE) of BnaC.MAGL8.a in Arabidopsis to explore its potential biological function. They observed that this ectopic expression causes male sterility by affecting the devlopment of pollens.  To develop their molecular understanding around the process they carried out RNAseq studies in the flower buds.  Total 6 RNAseq datasets representing 3 biological replicates each for WT and BnaC.MAGL8.a were used in this study The RNA profiles are archived in the SRA, and meta Information on each may be viewed through the SRA ID: SRR8428904, SRR8428905, SRR8428906, SRR8428907, SRR8428908, SRR8428909(https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP178230).
 
 The Sequence Read Archive, or SRA, is a publicly available database containing read sequences from a variety of experiments. Scientists who would like their read sequences present on the SRA submit a report containing the read sequences, experimental details, and any other accessory meta-data.
 
@@ -125,7 +125,7 @@ mv SRR8428904_2.fastq EE_Rep3_R2.fastq
 
 The full slurm script is called [data_dump.sh](/raw_data/data_dump.sh) can be found in **raw_data/** folder.  
 
-As a precautionary measure, always include your temporary directory in the environment. While not all programs require a temporary directory to work, it takes far less time including ours in the environment than it is waiting for an error! After typing our script, we press CTRL + X to exit, 'y', and then enter to save.
+As a precautionary measure, always include your temporary directory in the environment. While not all programs require a temporary directory to work, it takes far less time to include ours in the environment than it would to wait for an error! After typing our script, we press CTRL + X to exit, 'y', and then enter to save.
 
 Now that we have our script saved, we submit it to the compute nodes with the following command:
 
@@ -583,7 +583,7 @@ The full slurm script [sam_sort_bam.sh ](/mapping/sam_sort_bam.sh) can be found 
 2. Reference guided transcript discovery mode : Quantify known transcripts and detect novel ones.
 3. De-novo mode : Detect and assemble transcripts.
 
-We will be running stringtie using the option 2 that includes step 7, 8 and 9 of the workflow.  In the first step of this process stringtie along with sample bam file and  refernce gtf file generate a gtf file corresponding to the sample.  This gtf file have information on expression levels of transcripts, exons and other features along with any novel transcripts. The syntax of the command is 
+We will be running stringtie using the option 2 that includes step 7, 8 and 9 of the workflow.  In the first step of this process stringtie along with sample bam file and  reference gtf file generate a gtf file corresponding to the sample.  This gtf file has information on expression levels of transcripts, exons and other features along with any novel transcripts. The syntax of the command is 
 
 `stringtie -p 4 -l label -G Reference.gtf -o sample.gtf sample.bam` 
 
@@ -595,10 +595,10 @@ In this command
 -o output gtf corresponding to expression levels of features of the sample
 ```
 
-Once we have ran this command through all our six samples (WT1, WT2, WT3, EE1,EE2 and EE3) we will have 6 gtf files each corresponding to one of the sample containng feature expression values. Having 6 different gtf files is of no advantage as each may contain same novel transcript but labelled differently.  Ideally we would like to merge these 6 gtf files along with the reference GTF to achieve following goals
+Once we have run this command through all our six samples (WT1, WT2, WT3, EE1,EE2 and EE3) we will have 6 gtf files each corresponding to one of the sample containing feature expression values. Having 6 different gtf files is of no advantage as each may contain the same novel transcript but labelled differently.  Ideally we would like to merge these 6 gtf files along with the reference GTF to achieve following goals
 - Redundant transcripts across the samples should be represented once
 - Known transcripts should hold their stable gene ID's (assigned in Ensembl)
-- Novel transcripts present across multiple samples with different names should be represented once.
+
 
 The command we will use to achieve this is `stringtie --merge` and the syntax is
 
@@ -687,7 +687,7 @@ Now lets have a look at out merged GTF file `stringtie_merged.gtf` from the prev
 1       StringTie       exon    12424   13173   1000    -       .       gene_id "MSTRG.2"; transcript_id "MSTRG.2.2"; exon_number "2";
 1       StringTie       exon    13335   13714   1000    -       .       gene_id "MSTRG.2"; transcript_id "MSTRG.2.2"; exon_number "3";
 ```
-This is our new refernce GTF file we will be using to quantify the expression of dfferent genes and transcripts.  If we look closer we can see that the file have information different features but exclude coverage, TPM and FPKM information.  Thats how we want it to be for use as refernce in sunsequent analysis.  Also note that the first two transcripts have known ENSEMBL `transcrip-id`,`gene_name` and `ref_gene_id`, however it is missing in transcript 3.  This is because it represents a novel transcript identified in the study.  
+This is our new reference GTF file we will be using to quantify the expression of dfferent genes and transcripts.  If we look closer we can see that the file have information different features but exclude coverage, TPM and FPKM information.  Thats how we want it to be for use as reference in subsequent analysis.  Also note that the first two transcripts have known ENSEMBL `transcrip-id`,`gene_name` and `ref_gene_id`, however it is missing in transcript 3.  This is because it represents a novel transcript identified in the study.  
 
 Before we go ahead lets have look at the GFF compare stats.  The file we are looking for is `gffcompare.stats`, and the contents are self explanatory. One can explore other files `gffcompare.annotated.gtf`, `gffcompare.loci` ,`gffcompare.stats`,`gffcompare.stringtie_merged.gtf.refmap` , `gffcompare.stringtie_merged.gtf.tmap` , `gffcompare.tracking`  of the comparison to have a deeper understanding of the differences.
 ```
@@ -741,7 +741,7 @@ Where:
 -A gene abundance estimation output file
 ```
 
-We can compose a script based on the above command to run all out samples.
+We can compose a script based on the above command to run all our samples.
 
 <pre style="color: silver; background: black;">                                                                                                          
 #!/bin/bash
@@ -1115,7 +1115,7 @@ text(pc$x[,1],pc$x[,2],pos=2,rownames(pc$x), col=c("red", "red","red","blue", "b
 
 </pre>
 
-As wecan see that the PC1 explains around 70% variance and also seperates the samples based on the conditions, i.e. WT and ectopic expression samples (Visualise dropping samples on x-axis).  This means that 70% of the variance in the samples can be explained by the sample conditions.
+As we can see that the PC1 explains around 70% variance and also seperates the samples based on the conditions, i.e. WT and ectopic expression samples (Visualise dropping samples on x-axis).  This means that 70% of the variance in the samples can be explained by the sample conditions.
 <img src="PCAplot_for_all_libraries.png" >
 
 <h2 id="Eighth_Point_Header">Gene annotation with BiomaRt</h2>
