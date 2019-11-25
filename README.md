@@ -1181,38 +1181,6 @@ dim(sig_gene_fpkm)
 &#35;&#35; Our selected dataset has 388 genes same as that were in g_sign
 </pre>
 
-Now the next set of commands is to compute PCA and plot it. We will generate 2 plots
-(1) Bargraph showing % of variance explained by each PC.
-(2) PCA plot itself using PC1 and PC2.
-
-<pre style="color: silver; background: black;">
-&#35;&#35; Command below calculate all the PC of the data
-pc<-prcomp(t(sig_gene_fpkm),scale=TRUE)
-
-&#35;&#35; Here we are estimating the varaiance contributed by each component.
-pcpcnt<-round(100*pc$sdev^2/sum(pc$sdev^2),1)
-names(pcpcnt)<-c("PC1","PC2","PC3","PC4","PC5","PC6")
-barplot(pcpcnt,ylim=c(0,100))
-pcpcnt
-PC1  PC2  PC3  PC4  PC5  PC6 
-68.8 13.1  7.0  5.7  5.4  0.0 
-</pre>
-Around 68.8% of the variance in the data can be explained by genes in our geneset.  Which is pretty good.
-
-<img src="PC_variance_plot.png" >
-
-
-
-Now the next set of codes below plots a PCA plot.  Please donot get baffeled by the code. As you keep getting experienced with coding this all will start to make sense. :-)
-<pre style="color: silver; background: black;">
-point_colors = c("red", "red","red","blue", "blue", "blue")
-plot(pc$x[,1],pc$x[,2], xlab="", ylab="", main="PCA plot for all libraries",xlim=c(min(pc$x[,1])-2,max(pc$x[,1])+2),ylim=c(min(pc$x[,2])-2,max(pc$x[,2])+2),col=point_colors)
-text(pc$x[,1],pc$x[,2],pos=2,rownames(pc$x), col=c("red", "red","red","blue", "blue", "blue"))
-
-</pre>
-
-As we can see that the PC1 explains around 70% variance and also seperates the samples based on the conditions, i.e. WT and ectopic expression samples (Visualise dropping samples on x-axis).  This means that 70% of the variance in the samples can be explained by the sample conditions.
-<img src="PCAplot_for_all_libraries.png" >
 
 <h2 id="Eighth_Point_Header">Gene annotation with BiomaRt</h2>
 
