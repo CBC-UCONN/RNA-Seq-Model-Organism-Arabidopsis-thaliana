@@ -204,7 +204,7 @@ Global options
 --help, display this help and exit
 --version, output version information and exit</pre>
 
-The quality may be any score from 0 to 40. The default of 20 is much too low for a robust analysis. We want to select only reads with a quality of 35 or better. Additionally, the desired length of each read is 50bp. Again, we see that a default of 20 is much too low for analysis confidence. We want to select only reads whose lengths exceed 45bp. Lastly, we must know the scoring type. While the quality type is not listed on the SRA pages, most SRA reads use the "sanger" quality type. Unless explicitly stated, try running sickle using the sanger qualities. 
+The quality may be any score from 0 to 40. The default of 20 is much too low for a robust analysis. We want to select only reads with a quality of 25 or better and a minimum acceptible read length of 45 bps post trimming.  The 45bp read length will ensure unique mapping of the reads across the genome.  Lastly, we must know the scoring type. While the quality type is not listed on the SRA pages, most SRA reads use the "sanger" quality type. Unless explicitly stated, try running sickle using the sanger qualities. 
 
 Let's put all of this together for our sickle script using our downloaded fastq files:
 
