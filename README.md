@@ -1206,6 +1206,8 @@ head(listDatasets(mart))[grep("thaliana",listDatasets(mart)[,1]),]
 &#35;&#35; There is one dataset"athaliana_eg_gene” holding information about Arabidopsis genes.
 &#35;&#35; Now we need to identify filters and then the attributes before we extract the data.
 
+thale_mart <- useMart(biomart = "plants_mart", host = "plants.ensembl.org", dataset = "athaliana_eg_gene")
+
 &#35;&#35; To get information on filters you can try the command below. 
 &#35;&#35; This will list out 206 filters with their name and description. We have to make a selection of filter from there
 listFilters(thale_mart)
